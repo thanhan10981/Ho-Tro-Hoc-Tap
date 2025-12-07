@@ -1,0 +1,1006 @@
+/* ================= GLOBAL ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+.page {
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+/* ================= CONTAINER ================= */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ================= HEADER ================= */
+.header {
+  background: white;
+  padding: 16px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.logo {
+  height: 42px;
+}
+
+.menu {
+  display: flex;
+  gap: 28px;
+}
+
+.menu a {
+  text-decoration: none;
+  color: #555;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.menu .active {
+  color: #2d63f5;
+  font-weight: 600;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #2d63f5;
+}
+
+/* ================= USER INFO ================= */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.title-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;              /* FIX: giãn lại khoảng cách giữa nút */
+}
+
+.title-right .btn {
+  padding: 10px 20px;     /* nút thoáng hơn */
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 12px;
+}
+
+.notif {
+  background: #ff4d4d;
+  color: white;
+  padding: 3px 7px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background: #2d63f5;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+}
+
+/* ================= TITLE AREA ================= */
+.page-header {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header .title-left h1 {
+  font-size: 26px;        /* nhỏ lại đúng như bản gốc Readdy */
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+
+.page-header .title-left p {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+
+.btn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.upload {
+  background: #e8f0ff;
+  color: #2463eb;
+}
+
+.create {
+  background: #2463eb;
+  color: white;
+  font-weight: 600;
+}
+
+.export {
+  background: #212121;
+  color: white;
+}
+
+/* ================= MAIN GRID ================= */
+.main-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr 260px;
+  gap: 28px;
+  margin-top: 10px;
+  align-items: start;
+}
+
+/* ================= FILTER BOX ================= */
+.filter-box {
+  background: white;
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid #e7e7e7;
+}
+
+.filter-box h2 {
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+/* ================= FILTER SELECT BOX ================= */
+.filter-box select {
+  width: 100%;
+  height: 39px;
+  border-radius: 20px;
+  border: 1px solid #d8dde6;
+  padding: 0 14px;
+  background: #fff;
+  font-size: 14px;
+  margin-top: 6px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filter-box select:hover {
+  border-color: #b4bfd3;
+}
+
+.filter-box select:focus {
+  border-color: #2463eb;
+  box-shadow: 0 0 0 3px rgba(36, 99, 235, 0.15);
+}
+
+.search-box {
+  background: #f1f3f5;
+  padding: 7px;
+  border-radius: 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+label {
+  font-weight: 600;
+  margin-top: 14px;
+  display: block;
+}
+
+.check-group label {
+  font-weight: 400;
+  margin-top: 6px;
+}
+
+/* ================= SUMMARY SECTION ================= */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.section-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.summary-section {
+  background: white;
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+/* SUMMARY GRID */
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  border: 1px solid #ececec;
+  transition: 0.25s ease;
+  font-size: 14px;
+}
+
+.summary-card:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* ICON */
+.card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+}
+
+/* COLORS */
+.blue { color: rgb(59 130 246 / var(--tw-text-opacity, 1)); }
+.green { color: rgb(22 163 74 / var(--tw-text-opacity, 1)); }
+.orange { color: rgb(234 88 12 / var(--tw-text-opacity, 1)); }
+
+/* TEXT */
+.card-content h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.card-content p {
+  font-size: 13px;
+  color: #666;
+}
+
+.tag-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.tag {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 8px;
+}
+
+.blue-tag { background: #e7efff; color: #2463eb; }
+.green-tag { background: #e4ffe1; color: #2a8a36; }
+.yellow-tag { background: #ffe9bd; }
+.red-tag { background: #ffd2d2; color: #cc3333; }
+
+/* META */
+.meta {
+  margin-top: 10px;
+  font-size: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.meta-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+.meta-actions button {
+  border: none;
+  padding: 6px;
+  background: #f1f3f5;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ========== DETAIL PANEL FIX UI ========== */
+
+.detail-box {
+  background: #fff;
+  border-radius: 22px;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+
+   
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid #e5e7eb;
+  max-width: 360px;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 14px;
+}
+
+
+/* ====== HEADER ====== */
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #f1f3f5;
+  border: 1px solid #dcdcdc;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.15s;
+}
+
+.close-btn:hover {
+  background: #e4e7ea;
+}
+
+.detail-box h2 {
+  font-size: 18px !important;
+  font-weight: 700;
+}
+
+/* ===== FILE INFO ===== */
+
+.file-info-box {
+  border-radius: 9px;
+  background: #f4f2f2;
+  color: #949292;
+}
+
+.file-icon {
+  margin-left: 10px;
+}
+
+.file-meta {
+  margin-left: 10px;
+  display: flex;
+  gap: 8px;
+}
+/* ===== MAIN CONTENT ===== */
+
+.detail-text h4 {
+  font-size: 14px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.detail-text p,
+.detail-text li {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.55;
+}
+
+.detail-text ul {
+  margin-left: 18px;
+}
+
+/* ===== KEYWORDS ===== */
+
+.keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.keyword {
+  padding: 5px 9px;
+  background: #eef3ff;
+  border-radius: 10px;
+  color: #2463eb;
+  font-size: 13px;
+}
+
+/* ===== BIG BUTTONS (Edit / Share) ===== */
+
+.detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  /* Tạo khoảng cách giữa 2 nhóm nút */
+  margin-bottom: 10px;   /* <<< thêm dòng này */
+  margin-top: 10px;
+
+}
+
+.btn-blue,
+.btn-green {
+  width: 100%;
+  padding: 14px 0;
+  font-size: 15px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-blue {
+  background: #2463eb;
+  color: white;
+}
+
+.btn-green {
+  background: #12b76a;
+  color: white;
+}
+
+.btn-blue:hover {
+  background: #1f54cc;
+}
+
+.btn-green:hover {
+  background: #0f9d59;
+}
+
+/* ===== EXPORT + PRINT ===== */
+
+.detail-bottom-actions {
+   display: flex;
+  justify-content: space-between;
+  gap: 14px;       
+  margin-top: 10px; /* tạo khoảng cách mềm mại hơn */
+}
+
+.detail-bottom-actions button {
+  flex: 1;
+  padding: 12px 0;
+  background: #f1f3f5;
+  border-radius: 12px;
+  border: 1px solid #d0d5dd;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.15s;
+}
+
+.detail-bottom-actions button:hover {
+  background: #e7eaee;
+}
+
+.left-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.under-filter {
+  margin-top: 16px !important;
+}
+
+/* ======================================================
+   RIGHT COLUMN (DETAIL + RECENT)
+====================================================== */
+
+.right-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.under-detail {
+  margin-top: 16px !important;
+}
+
+.detail-actions .edit {
+  background: #e7efff;
+  color: #2463eb;
+}
+
+.detail-actions .share {
+  background: #dbfae6;
+  color: #1b8c4a;
+}
+
+.detail-actions .export,
+.detail-actions .print {
+  background: #f1f3f5;
+  color: #444;
+}
+
+
+/* ================= BOTTOM GRID ================= */
+.bottom-grid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 260px 1fr 260px;
+  gap: 28px;
+}
+
+/* ================= STATS BOX ================= */
+.stats-box {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+/* ================= RECENT BOX ================= */
+.recent-box {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.recent-item {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+.recent-item p {
+  font-size: 14px;
+}
+
+/* =============== RESPONSIVE =============== */
+@media (max-width: 1200px) {
+  .main-grid,
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 800px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ========= WRAPPER CỦA SORT + VIEW ========= */
+.view-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ========= DROPDOWN ========= */
+.sort {
+  padding: 10px 14px;
+  border: 1px solid #d8dde6;
+  border-radius: 12px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ========= HỘP CHỨA 2 NÚT (BO TRÒN GIỐNG REAL) ========= */
+/* ---------------- View Switch ---------------- */
+.view-switch {
+  display: flex;
+  gap: 10px;
+}
+
+.switch-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #f1f3f5;
+  border: 1px solid #d6d6d6;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.switch-btn.active {
+  background: #2d63f5;
+  color: white;
+  border-color: #2d63f5;
+}
+
+/* ---------- GRID MODE ---------- */
+.summary-grid.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+/* ---------- LIST MODE ---------- */
+.summary-grid.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summary-grid.list .summary-card {
+  display: flex;
+  width: 100%;
+  padding: 18px;
+  align-items: center;
+  gap: 22px;
+}
+
+/* ICON thu nhỏ trong list */
+.summary-grid.list .card-icon {
+  width: 48px;
+  height: 48px;
+}
+
+/* Text nằm ngang */
+.summary-grid.list .card-content {
+  flex: 1;
+}
+
+/* ------------------------------------------- */
+/*                CUSTOM DROPDOWN              */
+/* ------------------------------------------- */
+
+.dropdown {
+  position: relative;
+  user-select: none;
+}
+
+.dropdown-btn {
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #d8dde6;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 120px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dropdown-btn .arrow {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* MENU DROPDOWN */
+.dropdown-menu {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  width: 140px;
+
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ececec;
+
+  padding: 6px 0;
+  display: none;
+  z-index: 20;
+
+  animation: fadeIn 0.15s ease-out;
+}
+
+.dropdown.open .dropdown-menu {
+  display: block;
+}
+
+/* ITEM */
+.dropdown-menu .item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.15s;
+}
+
+.dropdown-menu .item:hover {
+  background: #f3f6ff;
+  color: #2463eb;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------- */
+/*    CĂN CHỈNH KHOẢNG CÁCH HEADER TRONG LIST  */
+/* ------------------------------------------- */
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;   /* khoảng cách giữa dropdown & view-switch */
+}
+
+.section-header h2 {
+  margin-right: auto; /* đẩy h2 về bên trái */
+}
+
+/* ------------------------------------------- */
+/*  Làm dropdown đẹp và sát giống bản mẫu gốc  */
+/* ------------------------------------------- */
+
+.dropdown-btn:hover {
+  border-color: #bfc7d6;
+}
+
+.dropdown.open .dropdown-btn {
+  border-color: #2463eb;
+  box-shadow: 0 0 0 3px rgba(36, 99, 235, 0.15);
+}
+
+
+/* ===================== UPLOAD POPUP ===================== */
+
+.upload-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.upload-card {
+  background: white;
+  padding: 32px;
+  width: 520px;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.upload-title-header {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+/* Nét đứt */
+.upload-box {
+  border: 2px dashed #cdd3df;
+  border-radius: 16px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-circle {
+  width: 70px;
+  height: 70px;
+  background: #e9f1ff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32px;
+  color: #2463eb;
+  margin-bottom: 12px;
+}
+
+.upload-btn {
+  margin-top: 10px;
+  background: #2463eb;
+  color: white;
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.upload-btn:hover {
+  background: #164fc9;
+}
+
+.upload-note {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #666;
+}
+
+.upload-close {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #f1f3f5;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.upload-close:hover {
+  background: #e2e6ea;
+}
+
+/* ===================== CREATE AI SUMMARY ===================== */
+
+.create-ai-box {
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  
+}
+
+/* Title */
+.create-ai-box h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* Row container (label + input) */
+.ai-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-row label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Select */
+.ai-select {
+  width: 260px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #cfd5e2;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.ai-select:focus {
+  border-color: #2463eb;
+  box-shadow: 0 0 0 3px rgba(36, 99, 235, 0.15);
+}
+
+/* Range slider */
+input[type="range"] {
+  width: 300px;
+  accent-color: #2463eb;
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 300px;
+  margin-top: -4px;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Checkbox options */
+.ai-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-options label {
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Buttons group */
+.ai-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+/* Generate button */
+.ai-generate {
+  background: linear-gradient(90deg, #6a5af9, #8369ff);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.ai-generate:hover {
+  opacity: 0.9;
+}
+
+/* Close button */
+.ai-close {
+  background: #f1f3f5;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 1px solid #d0d5dd;
+  font-size: 15px;
+  cursor: pointer;
+  color: #444;
+  transition: 0.2s;
+}
+
+.ai-close:hover {
+  background: #e6e8eb;
+}
+
+/* =========== EMPTY DETAIL PANEL (Chọn tóm tắt để xem) =========== */
+.detail-box.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;       /* rộng hơn */
+  padding: 28px;
+  text-align: center;
+  color: #555;
+}
+
+.detail-empty .icon {
+  font-size: 48px;
+  opacity: 0.4;
+  margin-bottom: 12px;
+}
+
+.detail-empty h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.detail-empty p {
+  font-size: 14px;
+  color: #777;
+  line-height: 1.5;
+  max-width: 220px;
+  margin: 0 auto;
+}

@@ -1,5 +1,4 @@
-import "../../styles/dashboard.css";
-
+import "../../../styles/dashboard.css";
 const DashboardPage = () => {
   return (
     <div className="dashboard">
