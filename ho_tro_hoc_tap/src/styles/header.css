@@ -36,11 +36,13 @@
 }
 
 .h-logo-text {
+  font-family: "Brush Script MT", cursive;
   font-size: 28px;
   font-weight: 600;
-  font-family: "Brush Script MT", cursive;
-  color: #3366ff;
+  color: #3b82f6;
+  white-space: nowrap; /* ngăn xuống dòng */
 }
+
 
 /* CENTER MENU */
 .h-nav {
@@ -151,3 +153,54 @@
   width: 40px;
   height: 40px;
 }
+@media (max-width: 1270px) {
+  .h-nav {
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 600px; /* chỉnh tùy bạn */
+    padding-bottom: 4px;
+
+    /* Ẩn scrollbar đẹp hơn */
+    -ms-overflow-style: none; 
+    scrollbar-width: none;
+  }
+
+  .h-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .h-container {
+    justify-content: space-between;
+    padding: 0 16px;
+  }
+}
+.h-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap; /* ✨ NGĂN XUỐNG DÒNG */
+}
+@media (max-width: 1270px) {
+  .h-logo-text {
+    font-size: 22px;   /* nhỏ hơn */
+  }
+}
+@media (max-width: 1270px) {
+  .h-nav {
+    gap: 20px;
+  }
+}
+/* Ô chứa icon */
+.h-left img {
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  background: #3b82f6; /* màu xanh */
+  border-radius: 12px;
+
+  /* Công thức chuyển mọi icon thành trắng */
+  filter: brightness(0) invert(1);
+}
+
+
+

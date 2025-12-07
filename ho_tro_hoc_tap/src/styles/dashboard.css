@@ -1,6 +1,5 @@
 /* ===== GLOBAL ===== */
 .dashboard {
-  padding: 100px 150px 40px;
   background: #f7f9fc;
   font-family: "Nunito", sans-serif;
 }
@@ -29,6 +28,35 @@
   opacity: 0.9;
   margin-bottom: 20px;
   font-size: 17px;
+}
+@media (max-width: 780px) {
+  .hero {
+    flex-direction: column;     /* từ ngang → dọc */
+    text-align: center;
+    padding: 30px 24px;
+    gap: 24px;                  /* khoảng cách giữa các phần */
+  }
+
+  .hero-left {
+    width: 100%;
+  }
+
+  .search-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .ask-ai-btn {
+    width: 30%;                /* nút không bị tràn */
+  }
+
+  .hero-right {
+    display: none;              /* ẩn hình minh hoạ bên phải */
+  }
 }
 
 /* === SEARCH ROW === */
@@ -81,6 +109,7 @@
   font-size: 15px;
   transition: 0.2s;
   min-width: 20%;
+  margin-top: -15px;
 }
 
 .ask-ai-btn:hover {
@@ -112,6 +141,13 @@
   right: -35px;
   top: -20px;
   z-index: 1;
+}
+@media (max-width: 950px) {
+  .hero-right,
+  .hero-img,
+  .hero-right::before {
+    display: none;
+  }
 }
 
 /* ===== STAT CARDS ===== */

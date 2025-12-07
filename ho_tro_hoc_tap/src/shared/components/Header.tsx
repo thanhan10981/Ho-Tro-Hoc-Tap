@@ -12,14 +12,18 @@ export default function Header() {
 
         {/* LEFT: Logo */}
         <div className="h-left">
-      <img
-        src="/logo_ai.svg"
-        className="w-10 h-10"
-        style={{ filter: "invert(43%) sepia(88%) saturate(2711%) hue-rotate(201deg) brightness(95%) contrast(92%)" }}
-      />
+          <img
+            src="/logo_ai.svg"
+            className="w-10 h-10"
+            style={{
+              filter:
+                "invert(43%) sepia(88%) saturate(2711%) hue-rotate(201deg) brightness(95%) contrast(92%)",
+            }}
+          />
 
           <span className="h-logo-text">AI StudyBuddy</span>
         </div>
+
 
         {/* CENTER: Navigation */}
         <nav className="h-nav">
@@ -28,7 +32,7 @@ export default function Header() {
             Dashboard
           </Link>
 
-          <Link to="/ask-ai" className={`nav-item ${isActive("/ask-ai") ? "active" : ""}`}>
+          <Link to="/ai-chat" className={`nav-item ${isActive("/ask-ai") ? "active" : ""}`}>
             Hỏi đáp AI
           </Link>
 
@@ -54,7 +58,7 @@ export default function Header() {
         <div className="h-right">
           <div className="h-noti">
             <span className="noti-badge">5</span>
-            <i className="fa-regular fa-bell"></i>
+            <img src="/bell.svg" className="fa-regular fa-bell"></img>
           </div>
 
           <div className="h-user">
