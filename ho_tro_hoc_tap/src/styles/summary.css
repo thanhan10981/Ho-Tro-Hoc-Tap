@@ -1,26 +1,4 @@
-/* ================= GLOBAL ================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Inter", sans-serif;
-}
 
-html, body {
-  overflow-x: hidden;
-}
-
-.page {
-  background: #f5f7fa;
-  min-height: 100vh;
-}
-/* ================= CONTAINER ================= */
-.container {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 16px;
-}
 
 /* ================= HEADER ================= */
 .header {

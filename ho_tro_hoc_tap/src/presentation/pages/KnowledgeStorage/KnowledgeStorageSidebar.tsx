@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 const KnowledgeStorageSidebar = () => {
   const [open, setOpen] = useState(true);
