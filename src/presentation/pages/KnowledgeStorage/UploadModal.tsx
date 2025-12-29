@@ -1,16 +1,26 @@
 import React from "react";
-
+import { useEffect } from "react";
 interface UploadModalProps {
   open: boolean;
   onClose: () => void;
 }
 
 const UploadModal: React.FC<UploadModalProps> = ({ open, onClose }) => {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-[520px] rounded-2xl shadow-xl p-6 animate-fadeIn relative">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 overflow-y-auto"
+    onClick={onClose}>
+      <div className="bg-white w-full max-w-[520px] rounded-2xl shadow-xl p-6 animate-fadeIn relative overflow-y-auto"
+      onClick={(e) => e.stopPropagation()}>
 
         {/* Close button */}
         <button

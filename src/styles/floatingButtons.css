@@ -1,0 +1,75 @@
+/* ===== FLOATING BUTTONS ===== */
+.floating-buttons {
+  position: fixed;
+  right: 28px;
+  bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  z-index: 999;
+}
+
+/* Wrapper để giữ tooltip + nút */
+.fab-wrapper {
+  position: relative;
+}
+
+/* ===== TOOLTIP ===== */
+.tooltip {
+  position: absolute;
+  right: 80px;
+  top: 50%;
+  transform: translateY(-50%) translateX(10px);
+  background: #0f172a;          /* xanh đen giống UI gốc */
+  color: white;
+  padding: 8px 14px;
+  font-size: 14px;
+  border-radius: 8px;
+  white-space: nowrap;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s ease;
+}
+
+/* Khi hover vào nút → tooltip hiện */
+.fab-wrapper:hover .tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ===== BUTTONS ===== */
+.fab {
+  width: 64px;
+  height: 64px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: 0.2s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.fab img {
+  width: 28px;
+  height: 28px;
+}
+
+.fab:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+}
+
+/* Colors */
+.fab.blue   { background: #3B82F6; }
+.fab.green  { background: #22C55E; }
+.fab.purple { background: #A855F7; }
+.fab.orange { background: #F97316; }
+
+/* Gradient button */
+.fab.gradient {
+  background: linear-gradient(135deg, #6880FA, #8B5CF6);
+}
