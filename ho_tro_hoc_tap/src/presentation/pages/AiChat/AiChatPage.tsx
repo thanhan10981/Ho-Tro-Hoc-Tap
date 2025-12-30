@@ -1,36 +1,153 @@
 import "../../../styles/AiChat.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
+
+
+interface Conversation {
+  id: number;
+  createdAt: string;
+}
+interface Message {
+  sender: "ai" | "user";
+  text: string;
+}
 
 export default function AiChatPage() {
-    const [messages, setMessages] = useState([
-        {
-            sender: "ai",
-            text: `Xin chào! Tôi là AI StudyBuddy, trợ lý học tập thông minh của bạn.
-Tôi có thể hỗ trợ bạn:
-• Giải thích khái niệm học thuật
-• Giải bài tập và phương trình
-• Phân tích tài liệu hoặc hình ảnh
-• Tạo câu hỏi ôn tập
-Hãy đặt câu hỏi hoặc tải tài liệu lên để bắt đầu!`
-        }
-    ]);
+const [conversationId, setConversationId] = useState<number | null>(null);
+const [conversations, setConversations] = useState<Conversation[]>([]);
+
+const [messages, setMessages] = useState<Message[]>([
+  {
+    sender: "ai",
+    text: `Xin chào! Tôi là **AI StudyBuddy**, trợ lý học tập thông minh của bạn.`
+  }
+]);
 
     const [input, setInput] = useState("");
+    const [loading, setLoading] = useState(false);
+const loadMessages = async (id: number) => {
+  const res = await fetch(
+    `http://localhost:9090/api/chat/conversation/${id}`
+  );
+  const data = await res.json();
 
-    const sendMessage = () => {
-        if (!input.trim()) return;
+  if (data.length === 0) {
+    setMessages([
+      { sender: "ai", text: "Xin chào! Tôi là AI StudyBuddy." }
+    ]);
+    return;
+  }
 
-        const userMsg = { sender: "user", text: input };
-        setMessages(prev => [...prev, userMsg]);
+  setMessages(
+    data.map((m: any) => ({
+      sender: m.sender === "nguoi_dung" ? "user" : "ai",
+      text: m.content
+    }))
+  );
+};
 
-        setTimeout(() => {
-            setMessages(prev => [...prev, { sender: "ai", text: "Đây là phản hồi mẫu từ AI…" }]);
-        }, 700);
+const createConversation = async () => {
+  const res = await fetch("http://localhost:9090/api/chat/conversation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId: 1,
+      monHocId: 1
+    })
+  });
 
-        setInput("");
-    };
+  const conv = await res.json();
 
-    return (
+  const mappedConv = {
+    id: conv.id,
+    createdAt: conv.createdAt
+  };
+
+  setConversations(prev => [mappedConv, ...prev]);
+  setConversationId(mappedConv.id);
+  setMessages([]);
+};
+
+
+useEffect(() => {
+  const init = async () => {
+    const res = await fetch(
+      "http://localhost:9090/api/chat/conversation/user/1"
+    );
+    const data = await res.json();
+
+    const mapped = data.map((c: any) => ({
+      id: c.id,
+      createdAt: c.createdAt
+    }));
+
+    setConversations(mapped);
+
+    if (mapped.length > 0) {
+      setConversationId(mapped[0].id);
+      loadMessages(mapped[0].id);
+    }
+  };
+
+  init();
+}, []);
+
+
+const sendMessage = async () => {
+  if (!input.trim() || loading || !conversationId) return;
+
+  const question = input;
+
+  setMessages(prev => [
+    ...prev,
+    { sender: "user", text: question },
+    { sender: "ai", text: "_⏳ AI đang suy nghĩ..._" }
+  ]);
+
+  setInput("");
+  setLoading(true);
+
+  try {
+    const res = await fetch("http://localhost:9090/api/chat/message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conversationId,
+        message: question
+      })
+    });
+
+    const text = await res.text();
+
+    setMessages(prev => {
+      const copy = [...prev];
+      copy[copy.length - 1] = { sender: "ai", text };
+      return copy;
+    });
+
+  } catch {
+    setMessages(prev => {
+      const copy = [...prev];
+      copy[copy.length - 1] = {
+        sender: "ai",
+        text: "Không kết nối được AI"
+      };
+      return copy;
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+const cleanMarkdown = (text: string) =>
+  text
+    .split("\n")
+    .filter(line => line.trim() !== "") // ❗ bỏ dòng trắng
+    .join("\n");
+
+return (
         <div className="ai-chat-page">
 
             {/* ===== MAIN LAYOUT 3 CỘT ===== */}
@@ -42,11 +159,6 @@ Hãy đặt câu hỏi hoặc tải tài liệu lên để bắt đầu!`
                     <h2 className="title">Hỏi đáp AI</h2>
                     <p className="subtitle">Đặt câu hỏi và nhận câu trả lời thông minh từ trí tuệ nhân tạo</p>
 
-                    {/* <div className="search-box">
-                        <input type="text" placeholder="Tìm kiếm cuộc trò chuyện…" />
-                        <span className="icon">🔍</span>
-                    </div> */}
-
                     <label className="label">Tất cả môn học</label>
                     <select className="select">
                         <option>Toán học</option>
@@ -56,44 +168,28 @@ Hãy đặt câu hỏi hoặc tải tài liệu lên để bắt đầu!`
                     </select>
 
                     <div className="chat-list">
-                        <div className="chat-item">
-                            <div className="chat-icon blue">📘</div>
+                        {conversations.map(c => (
+                            <div
+                            key={c.id}
+                            className={`chat-item ${c.id === conversationId ? "active" : ""}`}
+                            onClick={() => {
+                                setConversationId(c.id);
+                                loadMessages(c.id);
+                            }}
+                            >
+                            <div className="chat-icon blue">💬</div>
                             <div>
-                                <p className="chat-title">Giải phương trình vi phân</p>
-                                <span className="chat-sub">Toán • 15 tin nhắn</span>
+                                <p className="chat-title">
+                                Cuộc trò chuyện #{c.id}
+                                </p>
+                                <span className="chat-sub">
+                                {new Date(c.createdAt).toLocaleDateString()}
+                                </span>
                             </div>
-                        </div>
-
-                        <div className="chat-item">
-                            <div className="chat-icon green">🧪</div>
-                            <div>
-                                <p className="chat-title">Định luật Newton</p>
-                                <span className="chat-sub">Vật lý • 18 tin nhắn</span>
                             </div>
-                        </div>
-
-                        <div className="chat-item">
-                            <div className="chat-icon purple">🤖</div>
-                            <div>
-                                <p className="chat-title">Machine Learning cơ bản</p>
-                                <span className="chat-sub">AI • 23 tin nhắn</span>
-                            </div>
-                        </div>
-
-                        <div className="chat-item active">
-                            <div className="chat-icon yellow">⚗️</div>
-                            <div>
-                                <p className="chat-title">Phản ứng hóa học</p>
-                                <span className="chat-sub">Hóa học • 12 tin nhắn</span>
-                            </div>
-                        </div>
+                        ))}
                     </div>
 
-                    <div className="stats">
-                        <p><span>Tổng câu hỏi</span><strong>127</strong></p>
-                        <p><span>Tuần này</span><strong>18</strong></p>
-                        <p><span>Độ hài lòng</span><strong className="green">94%</strong></p>
-                    </div>
                 </aside>
 
                 {/* ========== CHAT MAIN ========== */}
@@ -102,23 +198,35 @@ Hãy đặt câu hỏi hoặc tải tài liệu lên để bắt đầu!`
                     <div className="chat-header">
                         <h2>AI StudyBuddy</h2>
                         <div className="header-actions">
-                            <button className="btn primary">+ Cuộc trò chuyện mới</button>
-                            <button className="btn green">⬆ Tải lên tài liệu</button>
-                            <button className="btn dark">⟳ Lịch sử hỏi đáp</button>
+                            <button className="btn primary" onClick={createConversation}>
+                                + Cuộc trò chuyện mới
+                                </button>
                         </div>
                     </div>
 
                     <div className="messages">
                         {messages.map((msg, i) => (
-                            <div key={i} className={`msg ${msg.sender}`}>
-                                {msg.sender === "ai" && <div className="avatar ai">AI</div>}
+                            <div className={`msg ${msg.sender}`}>
+                                {msg.sender === "ai" && (
+                                    <div className="avatar ai">
+                                    <img src="/logo_ai.svg" alt="AI" />
+                                    </div>
+                                )}
 
                                 <div className={`bubble ${msg.sender}`}>
+                                    <ReactMarkdown
+                                    remarkPlugins={[remarkMath]}
+                                    rehypePlugins={[rehypeKatex]}
+                                    >
                                     {msg.text}
+                                    </ReactMarkdown>
                                 </div>
 
-                                {msg.sender === "user" && <div className="avatar user">U</div>}
-                            </div>
+                                {msg.sender === "user" && (
+                                    <div className="avatar user">NT</div>
+                                )}
+                                </div>
+
                         ))}
                     </div>
 
@@ -127,9 +235,17 @@ Hãy đặt câu hỏi hoặc tải tài liệu lên để bắt đầu!`
                             value={input}
                             onChange={e => setInput(e.target.value)}
                             onKeyDown={e => e.key === "Enter" && sendMessage()}
-                            placeholder="Đặt câu hỏi hoặc mô tả vấn đề bạn cần giúp đỡ…"
+                            placeholder="Nhập câu hỏi của bạn..."
+                            disabled={loading}
                         />
-                        <button className="send-btn" onClick={sendMessage}>Gửi</button>
+                        <button
+                            className="send-btn"
+                            onClick={sendMessage}
+                            disabled={loading || !conversationId}
+                            >
+                            Gửi
+                            </button>
+
                     </div>
                 </main>
 
