@@ -2,12 +2,14 @@
 import MainLayout from "../layouts/MainLayout";
 
 import SchedulePage from "../pages/Schedule/SchedulePage";
-import { KnowledgeStoragePage } from "../pages/KnowledgeStorage/KnowledgeStoragePage";
+
 import { Routes, Route } from "react-router-dom";
 import DashboardPage from "../pages/Home/DashboardPage";
 import SummaryPage from "../pages/SummaryPage";
 import AiChatPage from "../pages/AiChat/AiChatPage";
 import QuizFlashcard from "../pages/QuizFlashcard/QuizFlashcard";
+import PersonalDocPage from "../pages/KnowledgeStorage/PersonalDocPage";
+import KnowledgeStoragePage from "../pages/KnowledgeStorage/KnowledgeStoragePage";
 
 export default function App() {
   return (
@@ -19,6 +21,7 @@ export default function App() {
         <Route path="/summary" element={<SummaryPage />} />
         <Route path="/ai-chat" element={<AiChatPage />} />
         <Route path="/quiz" element={<QuizFlashcard />} />
+        <Route path="/personalStore/:id" element={<PersonalDocPage />} />
       </Routes>
     </MainLayout>
   );
