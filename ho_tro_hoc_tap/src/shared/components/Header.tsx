@@ -32,7 +32,7 @@ export default function Header() {
             Dashboard
           </Link>
 
-          <Link to="/ai-chat" className={`nav-item ${isActive("/ask-ai") ? "active" : ""}`}>
+          <Link to="/ai-chat" className={`nav-item ${isActive("/ai-chat") ? "active" : ""}`}>
             Hỏi đáp AI
           </Link>
 
