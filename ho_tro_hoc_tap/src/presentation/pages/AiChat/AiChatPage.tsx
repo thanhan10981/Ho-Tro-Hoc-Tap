@@ -18,6 +18,9 @@ interface Message {
 export default function AiChatPage() {
 const [conversationId, setConversationId] = useState<number | null>(null);
 const [conversations, setConversations] = useState<Conversation[]>([]);
+const [detailLevel, setDetailLevel] = useState<"simple" | "detailed">("simple");
+const [language] = useState("vi");
+const [subject, setSubject] = useState<string | null>(null);
 
 const [messages, setMessages] = useState<Message[]>([
   {
@@ -100,11 +103,28 @@ const sendMessage = async () => {
   if (!input.trim() || loading || !conversationId) return;
 
   const question = input;
+const prompt = `
+Bạn là AI trợ lý học tập.
 
+${subject
+  ? `Môn học: ${subject}`
+  : `Môn học: Không xác định. Hãy tự xác định môn học phù hợp dựa trên nội dung câu hỏi.`
+}
+Mức độ: ${
+  detailLevel === "simple"
+    ? "Giải thích đơn giản, dễ hiểu cho người mới"
+    : "Giải thích chi tiết, có ví dụ và phân tích"
+}
+
+Ngôn ngữ trả lời: ${language === "vi" ? "Tiếng Việt" : "English"}
+
+Câu hỏi của học sinh:
+${question}
+`;
   setMessages(prev => [
     ...prev,
     { sender: "user", text: question },
-    { sender: "ai", text: "_⏳ AI đang suy nghĩ..._" }
+    { sender: "ai", text: "_⏳AI đang suy nghĩ..._" }
   ]);
 
   setInput("");
@@ -116,12 +136,12 @@ const sendMessage = async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         conversationId,
-        message: question
+        message: question,      
+        prompt: prompt          
       })
     });
 
     const text = await res.text();
-
     setMessages(prev => {
       const copy = [...prev];
       copy[copy.length - 1] = { sender: "ai", text };
@@ -141,11 +161,6 @@ const sendMessage = async () => {
     setLoading(false);
   }
 };
-const cleanMarkdown = (text: string) =>
-  text
-    .split("\n")
-    .filter(line => line.trim() !== "") // ❗ bỏ dòng trắng
-    .join("\n");
 
 return (
         <div className="ai-chat-page">
@@ -196,16 +211,24 @@ return (
                 <main className="chat">
 
                     <div className="chat-header">
-                        <h2>AI StudyBuddy</h2>
+                        <div className="chat-title">
+                            <img src="/logo_ai.svg" alt="AI" />
+                            <div>
+                            <h2>AI StudyBuddy</h2>
+                            <span className="status">● Sẵn sàng</span>
+                            </div>
+                        </div>
+
                         <div className="header-actions">
                             <button className="btn primary" onClick={createConversation}>
-                                + Cuộc trò chuyện mới
-                                </button>
+                            + Cuộc trò chuyện mới
+                            </button>
                         </div>
-                    </div>
+                        </div>
+
 
                     <div className="messages">
-                        {messages.map((msg, i) => (
+                        {messages.map((msg) => (
                             <div className={`msg ${msg.sender}`}>
                                 {msg.sender === "ai" && (
                                     <div className="avatar ai">
@@ -256,15 +279,38 @@ return (
                         <h3 className="card-title">Tuỳ chọn chủ đề</h3>
 
                         <label className="label">Môn học</label>
-                        <select className="select">
-                            <option>Chọn môn học</option>
-                        </select>
+                        <select
+                            className="select"
+                            value={subject ?? ""}
+                            onChange={e =>
+                              setSubject(e.target.value === "" ? null : e.target.value)
+                            }
+                          >
+                            <option value="">Chọn môn học</option>
+                            <option value="Toán học">Toán học</option>
+                            <option value="Vật lý">Vật lý</option>
+                            <option value="AI">AI</option>
+                            <option value="Hóa học">Hóa học</option>
+                          </select>
+
 
                         <label className="label">Mức độ chi tiết</label>
                         <div className="detail-buttons">
-                            <button className="btn small active">Đơn giản</button>
-                            <button className="btn small">Chi tiết</button>
+                          <button
+                            className={`btn small ${detailLevel === "simple" ? "active" : ""}`}
+                            onClick={() => setDetailLevel("simple")}
+                          >
+                            Đơn giản
+                          </button>
+
+                          <button
+                            className={`btn small ${detailLevel === "detailed" ? "active" : ""}`}
+                            onClick={() => setDetailLevel("detailed")}
+                          >
+                            Chi tiết
+                          </button>
                         </div>
+
 
                         <label className="label">Ngôn ngữ trả lời</label>
                         <select className="select">
