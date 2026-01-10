@@ -1,6 +1,8 @@
-import { useState } from "react";
-import type { EventFormData, EventFormProps } from "../../../shared/types/EventForm.types";
+import { useState, useEffect } from "react";
+import type { EventFormData, EventFormProps } from "../../../shared/types/lichHoc";
 import "../../../styles/Schedule/ScheduleHeader.css";
+import { getMyMonHoc } from "../../../shared/services/monHocService";
+import type { MonHocResponse } from "../../../shared/types/monHoc";
 
 export default function EventForm({ onSubmit, onCancel }: EventFormProps) {
   const [formData, setFormData] = useState<EventFormData>({
@@ -11,32 +13,53 @@ export default function EventForm({ onSubmit, onCancel }: EventFormProps) {
     endDate: "",
     endTime: "",
     type: "class",
-    subject: "cs",
+    subject: "",
     location: "",
-    priority: "normal",
+    priority: "binh_thuong",
     reminder: "60",
     repeat: false,
+    repeatMonths: 1,
   });
+  const [subjects, setSubjects] = useState<MonHocResponse[]>([]);
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        setLoadingSubjects(true);
+        const data = await getMyMonHoc();
+        setSubjects(data);
+      } catch (err) {
+        console.error("Không tải được môn học", err);
+      } finally {
+        setLoadingSubjects(false);
+      }
+    };
+
+    fetchSubjects();
+  }, []);
+
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    const target = e.target;
+    const { name, value, type, checked } = e.target as HTMLInputElement;
 
-    if (target instanceof HTMLInputElement && target.type === "checkbox") {
-      setFormData((prev) => ({ ...prev, [target.name]: target.checked }));
-    } else {
-      setFormData((prev) => ({ ...prev, [target.name]: target.value }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();        // ⬅️ chặn submit mặc định
+    onSubmit(formData);        // ⬅️ emit data ra ngoài
   };
 
+  
   return (
     <form className="event-form mt-[5px]" onSubmit={handleSubmit}>
       {/* Tên sự kiện */}
@@ -131,20 +154,27 @@ export default function EventForm({ onSubmit, onCancel }: EventFormProps) {
       {/* Môn học */}
       <div className="form-row">
         <label className="form-label">Môn học</label>
+
         <select
-          name="subject"
           className="select"
+          name="subject"
           value={formData.subject}
           onChange={handleChange}
+          required
+          disabled={loadingSubjects}
         >
-          <option value="cs">Cấu trúc dữ liệu</option>
-          <option value="db">Cơ sở dữ liệu</option>
-          <option value="ai">Trí tuệ nhân tạo</option>
-          <option value="web">Lập trình Web</option>
-          <option value="math">Toán cao cấp</option>
-          <option value="english">Tiếng Anh</option>
+          <option value="">
+            {loadingSubjects ? "Đang tải môn học..." : "-- Chọn môn học --"}
+          </option>
+
+          {subjects.map((subj) => (
+            <option key={subj.maMonHoc} value={subj.maMonHoc}>
+              {subj.tenMonHoc}
+            </option>
+          ))}
         </select>
       </div>
+
 
       {/* Địa điểm */}
       <div className="form-row">
@@ -162,15 +192,15 @@ export default function EventForm({ onSubmit, onCancel }: EventFormProps) {
       <div className="form-row">
         <label className="form-label">Mức độ ưu tiên</label>
         <select
-          name="priority"
-          className="select"
-          value={formData.priority}
-          onChange={handleChange}
-        >
-          <option value="normal">Bình thường</option>
-          <option value="important">Quan trọng</option>
-          <option value="urgent">Khẩn cấp</option>
-        </select>
+        className="select"  
+      name="priority"
+      value={formData.priority}
+      onChange={handleChange}
+    >
+      <option value="binh_thuong">Bình thường</option>
+      <option value="quan_trong">Quan trọng</option>
+    </select>
+
       </div>
 
       {/* Nhắc nhở */}
@@ -190,15 +220,34 @@ export default function EventForm({ onSubmit, onCancel }: EventFormProps) {
       </div>
 
       {/* Lặp lại */}
-      <div className="form-row flex items-center space-x-2">
-        <input
-          type="checkbox"
-          name="repeat"
-          checked={formData.repeat}
-          onChange={handleChange}
-        />
-        <label className="form-label">Lặp lại hàng tuần</label>
+      <div className="form-row flex items-center gap-4">
+        {/* Checkbox lặp lại */}
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            name="repeat"
+            checked={formData.repeat}
+            onChange={handleChange}
+          />
+          <label className="form-label mb-0">Lặp lại hàng tuần</label>
+        </div>
+
+        {/* Trong vòng X tháng */}
+        <div className="flex items-center space-x-2">
+          <span>trong vòng</span>
+          <input
+            type="number"
+            min={1}
+            className="input w-[80px]"
+            name="repeatMonths"
+            value={formData.repeatMonths}
+            onChange={handleChange}
+          />
+
+          <span>tháng</span>
+        </div>
       </div>
+
 
       {/* Actions */}
       <div className="form-actions">

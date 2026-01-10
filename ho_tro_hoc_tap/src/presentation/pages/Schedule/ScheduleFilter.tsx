@@ -54,8 +54,8 @@ export default function ScheduleFilter() {
 
       <div className="section-divider"></div>
 
-      {/* CÀI ĐẶT THÔNG BÁO */}
-      <div className="panel-section">
+      {/* CÀI ĐẶT THÔNG BÁO 
+       <div className="panel-section">
         <h3>Cài đặt thông báo</h3>
 
         <label><input type="checkbox" /> Nhắc nhở lớp học</label>
@@ -68,7 +68,7 @@ export default function ScheduleFilter() {
           <option>2 giờ</option>
           <option>1 ngày</option>
         </select>
-      </div>
+      </div>*/}
 
     </div>
   );

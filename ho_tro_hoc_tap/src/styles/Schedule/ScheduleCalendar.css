@@ -109,13 +109,21 @@
 /* ------------------------------ */
 .sc-body {
   /* NOTE: Nếu muốn hàng chia đều 6 tuần */
-  display: grid;
-  grid-template-rows: repeat(6, 1fr);
+
 
   /* NOTE: đảm bảo body chiếm toàn bộ phần còn lại */
   flex: 1;
 }
 
+.sc-body.month {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+}
+
+.sc-body.week {
+  display: grid;
+  grid-template-rows: 1fr;
+}
 /* Row = 1 tuần */
 .sc-row {
   display: grid;

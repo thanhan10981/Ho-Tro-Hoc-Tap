@@ -192,13 +192,50 @@
 }
 /* Ô chứa icon */
 .h-left img {
-  width: 50px;
-  height: 50px;
-  padding: 5px;
-  background-color: #6C63FF;
-  border-radius: 30px;
-  color: #fff;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  background: #3b82f6; /* màu xanh */
+  border-radius: 12px;
+
+  /* Công thức chuyển mọi icon thành trắng */
+  filter: brightness(0) invert(1);
 }
 
 
 
+.h-user {
+  position: relative;
+  cursor: pointer;
+}
+
+.h-user-dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  width: 160px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  padding: 8px 0;
+  z-index: 100;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-item:hover {
+  background: #f5f7fa;
+}
+
+.arrow.rotate {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}

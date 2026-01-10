@@ -51,29 +51,6 @@ export default function SummaryPage() {
   return (
     <div className="page">
 
-      {/* ---------------- HEADER ---------------- */}
-      <header className="header">
-        <div className="header-left">
-          <img src="/logo_ai.svg" className="logo" />
-
-          <nav className="menu">
-            <a>Dashboard</a>
-            <a>Hỏi đáp AI</a>
-            <a className="active">Tóm tắt bài học</a>
-            <a>Kho kiến thức</a>
-            <a>Quiz/Flashcard</a>
-            <a>Lịch học</a>
-          </nav>
-        </div>
-
-        <div className="header-right">
-          <div className="notif">3</div>
-          <div className="avatar">NT</div>
-          <div className="user-info">
-            <strong>Nguyễn Thành</strong>
-          </div>
-        </div>
-      </header>
 
       {/* ---------------- CONTAINER ---------------- */}
       <div className="container">
