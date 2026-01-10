@@ -1,0 +1,270 @@
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.event-form {
+  padding: 24px;
+}
+
+/* Custom scrollbar */
+.event-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.event-form::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 4px;
+}
+
+
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+/* Tiêu đề to hơn */
+.page-header h2 {
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Mô tả lớn hơn + nhạt như mẫu */
+.page-header p {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: #6b7280; /* xám nhạt */
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px; /* khoảng cách giữa các nút */
+  align-items: center;
+}
+
+
+/* ===== BUTTONS ===== */
+.header-actions button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s ease;
+}
+
+/* Nút thêm sự kiện */
+.primary-btn {
+  background: #2563eb; /* xanh đậm hơn */
+  color: white;
+}
+.primary-btn:hover {
+  background: #1d4ed8;
+}
+
+/* Nút đồng bộ */
+.success-btn {
+  background: #16a34a;
+  color: white;
+}
+.success-btn:hover {
+  background: #15803d;
+}
+
+/* Nút xuất PDF – xám đậm */
+.outline-btn {
+  background: #374151; /* xám đậm như mẫu */
+  color: white;
+}
+.outline-btn:hover {
+  background: #1f2937; /* đậm hơn khi hover */
+}
+
+/* Icon style mềm hơn */
+.header-actions button::before {
+  font-size: 16px;
+}
+
+/* Tint nhẹ cho emoji để nhìn “icon-like” hơn */
+.header-actions button span,
+.header-actions button {
+  text-shadow: 0 0 0 #0000;
+}
+
+/* ===== MODAL OVERLAY ===== */
+.modal-overlay {
+    margin-top: 20px;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+/* ===== MODAL CONTAINER ===== */
+.modal-container {
+  margin-top: 35px;
+  width: 480px;
+  background: white;
+  border-radius: 16px;
+  padding: 0;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  animation: modalShow 0.25s ease;
+  max-height: 85vh; 
+  overflow-y: auto;     /* CHO PHÉP SCROLL DỌC */
+  overflow-x: hidden; 
+}
+
+/* animation nhẹ cho popup */
+@keyframes modalShow {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ===== FORM CONTAINER ===== */
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.event-form-title {
+  margin-left: 20px;
+}
+
+.event-form {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Nhãn */
+.form-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Dạng grid 2 cột */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  width: 97%;
+}
+
+.select{
+  width: 100%;
+}
+
+/* Input / Select / Textarea */
+.input,
+.select,
+.textarea {
+  width: 95%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #f9fafb;
+  transition: 0.15s ease;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: #2563eb;
+  background: white;
+  outline: none;
+}
+
+/* Textarea */
+.textarea {
+  resize: vertical;
+}
+
+/* Checkbox hàng ngang */
+.form-row-inline {
+  display: flex;
+  align-items: center;
+}
+
+.form-label-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  height: fit-content;
+}
+
+.btn-cancel,
+.btn-save {
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+}
+
+/* Cancel */
+.btn-cancel {
+  background: #e5e7eb;
+  color: #374151;
+}
+.btn-cancel:hover {
+  background: #d1d5db;
+}
+
+/* Save */
+.btn-save {
+  background: #2563eb;
+  color: white;
+}
+.btn-save:hover {
+  background: #1d4ed8;
+}
+
