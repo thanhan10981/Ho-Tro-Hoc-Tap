@@ -1,55 +1,73 @@
-/* Panel tổng */
+/* =========================
+   PANEL TỔNG
+========================= */
 .filter-panel {
   width: 260px;
   background: #fff;
   padding: 18px;
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 24px;
 }
 
-/* Tiêu đề section */
+/* =========================
+   SECTION
+========================= */
 .panel-section h3 {
   margin-bottom: 12px;
   font-size: 22px;
   font-weight: 600;
 }
 
-/* Divider giữa các cụm */
+/* Divider */
 .section-divider {
   height: 1px;
-  background: rgba(0,0,0,0.08);
-  margin: 8px 0;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 6px 0;
 }
 
-/* Input & select */
-.input, .select {
+/* =========================
+   INPUT / SELECT
+========================= */
+.input,
+.select {
   width: 100%;
   padding: 9px 12px;
   border-radius: 8px;
   border: 1px solid #ddd;
-  margin-bottom: 12px;
+  font-size: 14px;
 }
 
-/* Nhãn */
 .label {
+  display: block;
   font-size: 15px;
-  margin: 8px 0 4px;
+  margin: 10px 0 6px;
   color: #444;
 }
 
-/* Checkbox group */
+/* =========================
+   CHECKBOX
+========================= */
 .checkbox-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-/* THỐNG KÊ — dòng thống kê */
+.panel-section label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+}
+
+/* =========================
+   THỐNG KÊ
+========================= */
 .stat-row {
-  width: 100%;
   background: #f9fafb;
   padding: 10px 12px;
   border-radius: 8px;
@@ -60,19 +78,16 @@
   align-items: center;
 }
 
-/* Text mô tả bên trái */
 .stat-label {
   font-size: 15px;
   color: #444;
 }
 
-/* Số bên phải */
 .stat-number {
-  font-size: 22px;            /* to hơn 3 size */
+  font-size: 22px;
   font-weight: 700;
 }
 
-/* Màu số khác nhau */
 .num-blue {
   color: #2563eb;
 }
@@ -85,18 +100,44 @@
   color: #059669;
 }
 
-/* Best subject */
 .best-subject {
-  margin-top: 12px;
+  margin-top: 10px;
   font-size: 15px;
   color: #333;
 }
 
-/* Checkbox label spacing */
-.panel-section label {
+/* =========================
+   EMAIL SETTING
+========================= */
+.email-row {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-  font-size: 15px;
+  gap: 10px;
+  flex-direction: column;
+}
+
+.readonly-input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+
+  background: #f9fafb;
+  color: #374151;
+}
+
+.readonly-input:focus {
+  outline: none;
+}
+
+.change-email-btn {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: none;
+
+  font-size: 14px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
 }

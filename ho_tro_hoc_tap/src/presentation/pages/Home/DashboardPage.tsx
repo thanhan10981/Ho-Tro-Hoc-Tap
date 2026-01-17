@@ -155,6 +155,46 @@ const DashboardPage = () => {
     fetchEvents();
   }, [token]);
 
+import { useEffect, useState } from "react";
+import type { LichHocUpcoming } from "../../../shared/types/lichHoc";
+import { getUpcomingEvents } from "../../../shared/services/summary.Service";
+
+const DashboardPage = () => {
+  const [events, setEvents] = useState<LichHocUpcoming[]>([]);
+useEffect(() => {
+  getUpcomingEvents()
+    .then(setEvents)
+    .catch(err => console.error("Lỗi load sự kiện:", err));
+}, []);
+const getPriorityClass = (priority: string) => {
+  switch (priority) {
+    case "khan_cap":
+      return "urgent";
+
+    case "quan_trong":
+      return "important";
+
+    case "binh_thuong":
+    default:
+      return "normal";
+  }
+};
+
+const getPriorityLabel = (priority: string) => {
+  switch (priority) {
+    case "khan_cap":
+      return "KHẨN CẤP";
+
+    case "quan_trong":
+      return "QUAN TRỌNG";
+
+    case "binh_thuong":
+    default:
+      return "BÌNH THƯỜNG";
+  }
+};
+
+
   return (
     <div className="dashboard">
       {/* HERO */}
@@ -297,6 +337,40 @@ const DashboardPage = () => {
       quan_trong: "important",
       binh_thuong: "normal",
     };
+  {events.length === 0 && (
+    <p style={{ padding: "10px" }}>Không có sự kiện nào trong tuần tới</p>
+  )}
+
+  {events.map((event, index) => {
+    const css = getPriorityClass(event.mucDoUuTien);
+
+    return (
+      <div key={index} className={`event-item ${css}`}>
+        <div className={`event-line ${css}`}></div>
+
+        <div className="event-body">
+          <div className="event-top">
+            <span className={`badge ${css}`}>
+              {getPriorityLabel(event.mucDoUuTien)}
+            </span>
+
+            <span className="event-time">
+              {event.thoiGianKetThuc}
+            </span>
+          </div>
+
+          <h3 className="event-name">{event.tieuDe}</h3>
+
+          <p className="event-desc">
+            {event.diaDiem
+              ? `${event.diaDiem} • ${event.moTa ?? ""}`
+              : event.moTa}
+          </p>
+        </div>
+      </div>
+    );
+  })}
+</section>
 
     const priorityClass =
       priorityMap[event.mucDoUuTien] ?? "normal";
@@ -307,6 +381,12 @@ const DashboardPage = () => {
         className={`event-item ${priorityClass}`}
       >
         <div className={`event-line ${priorityClass}`} />
+
+    </section>
+<div className="dashboard-grid">
+{/* RECENT ACTIVITIES */}
+<section className="recent-activity">
+  <h2>Hoạt động học tập gần đây</h2>
 
         <div className="event-body">
           <div className="event-top">

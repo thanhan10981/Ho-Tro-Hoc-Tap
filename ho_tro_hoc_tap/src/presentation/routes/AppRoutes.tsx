@@ -6,7 +6,7 @@ import DashboardPage from "../pages/Home/DashboardPage";
 import SchedulePage from "../pages/Schedule/SchedulePage";
 import KnowledgeStoragePage from "../pages/KnowledgeStorage/KnowledgeStoragePage";
 import PersonalDocPage from "../pages/KnowledgeStorage/PersonalDocPage";
-import SummaryPage from "../pages/SummaryPage";
+import SummaryPage from "../pages/SummaryPage/SummaryPage";
 import AiChatPage from "../pages/AiChat/AiChatPage";
 import QuizFlashcard from "../pages/QuizFlashcard/QuizFlashcard";
 
