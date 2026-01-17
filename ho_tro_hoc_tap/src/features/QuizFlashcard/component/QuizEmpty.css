@@ -1,0 +1,81 @@
+.quiz-empty {
+  max-width: 560px;
+  margin: 100px auto;
+  padding: 44px 48px;
+  text-align: center;
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border-radius: 24px;
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Title */
+.quiz-empty h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 14px;
+}
+
+/* Subtitle */
+.quiz-empty p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #475569;
+  margin-bottom: 34px;
+}
+
+/* Actions */
+.quiz-empty-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ===== AI BUTTON ===== */
+.btn-ai {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  border-radius: 14px;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  box-shadow:
+    0 12px 28px rgba(99, 102, 241, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.25s ease;
+}
+
+.btn-ai:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 18px 36px rgba(99, 102, 241, 0.55);
+}
+
+/* ===== MANUAL BUTTON ===== */
+.btn-manual {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  border-radius: 14px;
+  border: 2px dashed #c7d2fe;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #f1f5f9;
+  color: #1e293b;
+  transition: all 0.25s ease;
+}
+
+.btn-manual:hover {
+  background: #e2e8f0;
+  border-color: #818cf8;
+}
