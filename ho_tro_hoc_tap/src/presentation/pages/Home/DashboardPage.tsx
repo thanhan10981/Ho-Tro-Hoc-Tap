@@ -1,5 +1,45 @@
 import "../../../styles/dashboard.css";
+
+import { useEffect, useState } from "react";
+import type { LichHocUpcoming } from "../../../shared/types/lichHoc";
+import { getUpcomingEvents } from "../../../shared/services/summary.Service";
+
 const DashboardPage = () => {
+  const [events, setEvents] = useState<LichHocUpcoming[]>([]);
+useEffect(() => {
+  getUpcomingEvents()
+    .then(setEvents)
+    .catch(err => console.error("Lỗi load sự kiện:", err));
+}, []);
+const getPriorityClass = (priority: string) => {
+  switch (priority) {
+    case "khan_cap":
+      return "urgent";
+
+    case "quan_trong":
+      return "important";
+
+    case "binh_thuong":
+    default:
+      return "normal";
+  }
+};
+
+const getPriorityLabel = (priority: string) => {
+  switch (priority) {
+    case "khan_cap":
+      return "KHẨN CẤP";
+
+    case "quan_trong":
+      return "QUAN TRỌNG";
+
+    case "binh_thuong":
+    default:
+      return "BÌNH THƯỜNG";
+  }
+};
+
+
   return (
     <div className="dashboard">
 
@@ -108,54 +148,41 @@ const DashboardPage = () => {
 <section className="events-card">
   <h2 className="events-title">Sự kiện sắp tới</h2>
 
-  <div className="event-item urgent">
-    <div className="event-line urgent"></div>
-    <div className="event-body">
-      <div className="event-top">
-        <span className="badge urgent">URGENT</span>
-        <span className="event-time">Hôm nay 14:00</span>
-      </div>
-      <h3 className="event-name">Nộp bài tập Cơ sở dữ liệu</h3>
-      <p className="event-desc">Thiết kế CSDL cho hệ thống quản lý thư viện</p>
-    </div>
-  </div>
+  {events.length === 0 && (
+    <p style={{ padding: "10px" }}>Không có sự kiện nào trong tuần tới</p>
+  )}
 
-  <div className="event-item important">
-    <div className="event-line important"></div>
-    <div className="event-body">
-      <div className="event-top">
-        <span className="badge important">IMPORTANT</span>
-        <span className="event-time">Ngày mai 8:00</span>
-      </div>
-      <h3 className="event-name">Kiểm tra giữa kỳ Toán</h3>
-      <p className="event-desc">Phòng A205 • Đại số tuyến tính</p>
-    </div>
-  </div>
+  {events.map((event, index) => {
+    const css = getPriorityClass(event.mucDoUuTien);
 
-  <div className="event-item normal">
-    <div className="event-line normal"></div>
-    <div className="event-body">
-      <div className="event-top">
-        <span className="badge normal">NORMAL</span>
-        <span className="event-time">T3 • 10:00</span>
-      </div>
-      <h3 className="event-name">Thuyết trình nhóm AI</h3>
-      <p className="event-desc">Ứng dụng Machine Learning trong y tế</p>
-    </div>
-  </div>
+    return (
+      <div key={index} className={`event-item ${css}`}>
+        <div className={`event-line ${css}`}></div>
 
-  <div className="event-item normal">
-    <div className="event-line normal"></div>
-    <div className="event-body">
-      <div className="event-top">
-        <span className="badge normal">NORMAL</span>
-        <span className="event-time">T5 • 15:30</span>
+        <div className="event-body">
+          <div className="event-top">
+            <span className={`badge ${css}`}>
+              {getPriorityLabel(event.mucDoUuTien)}
+            </span>
+
+            <span className="event-time">
+              {event.thoiGianKetThuc}
+            </span>
+          </div>
+
+          <h3 className="event-name">{event.tieuDe}</h3>
+
+          <p className="event-desc">
+            {event.diaDiem
+              ? `${event.diaDiem} • ${event.moTa ?? ""}`
+              : event.moTa}
+          </p>
+        </div>
       </div>
-      <h3 className="event-name">Học bù Lập trình Web</h3>
-      <p className="event-desc">Phòng B103 • Framework React</p>
-    </div>
-  </div>
+    );
+  })}
 </section>
+
 
 
     </section>

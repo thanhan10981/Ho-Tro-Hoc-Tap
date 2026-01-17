@@ -1,17 +1,48 @@
-// ScheduleCalendar.tsx
 import React from "react";
+import { format } from "date-fns";
 import { useScheduleCalendar } from "../../../features/Schedule/useScheduleCalendar";
+import { useCalendarEvents } from "../../../features/Schedule/useCalendarEvents";
 import "../../../styles/Schedule/ScheduleCalendar.css";
+import DayEventsPopup from "./DayEventsPopup";
 
-export default function ScheduleCalendar(): React.JSX.Element {
-  const events = [
-    { date: "2025-12-05", title: "Deadline Web", time: "23:59", color: "#fecaca" },
-    { date: "2025-12-12", title: "Thi CTDL", time: "13:00 - B203", color: "#fef3c7" },
-    { date: "2025-12-06", title: "AI", time: "13:00 - C201", color: "#bfdbfe" },
-    { date: "2025-12-02", title: "Cấu trúc DL", time: "8:00 - B201", color: "#bfdbfe" },
-    { date: "2025-12-22", title: "Toán cao cấp", time: "8:00 - A205", color: "#bfdbfe" },
-  ];
+import type { CalendarEvent } from "../../../features/Schedule/useScheduleCalendar";
+import { useSearchCalendarEvents } from "../../../features/Schedule/useSearchCalendarEvents";
 
+interface Props {
+  filters: {
+    keyword?: string;
+    maMonHoc?: number;
+    loaiSuKien?: string[];
+
+  };
+
+  refreshKey: number;
+
+  onRefresh?: () => void;
+
+}
+
+
+
+export default function ScheduleCalendar({ filters, refreshKey, onRefresh, }: Props): React.JSX.Element {
+ /* ================== 1. popup state ================== */
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
+  const [popupEvents, setPopupEvents] = React.useState<CalendarEvent[]>([]);
+  
+  /* ================== 2. click day handler (PHẢI Ở TRÊN) ================== */
+  const onDayClick = React.useCallback(
+    (date: Date) => {
+      setSelectedDate(date);
+
+      setPopupEvents((prev) => {
+        // sẽ set lại sau khi events update
+        return prev;
+      });
+    },
+    []
+  );
+
+  /* ================== 3. calendar core state ================== */
   const {
     currentDate,
     setCurrentDate,
@@ -21,93 +52,163 @@ export default function ScheduleCalendar(): React.JSX.Element {
     renderWeekCells,
     gotoPrev,
     gotoNext,
-  } = useScheduleCalendar(events);
+  } = useScheduleCalendar(onDayClick);
+
+  /* ================== 4. fetch events ================== */
+
+
+
+  const hasFilter =
+    !!filters.keyword ||
+    !!filters.maMonHoc ||
+    !!filters.loaiSuKien;
+
+  const calendarData = useCalendarEvents(
+    currentDate,
+    viewMode,
+    refreshKey
+  );
+
+  const searchData = useSearchCalendarEvents(
+    filters,
+    refreshKey
+  );
+
+  const rawEvents = hasFilter
+  ? searchData.events
+  : calendarData.events;
+
+ const events: CalendarEvent[] = rawEvents ?? [];
+
+
+
+  const loading = hasFilter
+    ? searchData.loading
+    : calendarData.loading;
+
+
+
+  /* ================== 5. sync popup events when events change ================== */
+  React.useEffect(() => {
+    if (!selectedDate) return;
+
+    const dayEvents = events.filter(
+      (e) =>
+        format(new Date(e.date), "yyyy-MM-dd") ===
+        format(selectedDate, "yyyy-MM-dd")
+    );
+
+    setPopupEvents(dayEvents);
+  }, [events, selectedDate]);
 
   return (
-    <div className="sc-container">
-      <div className="sc-actions">
-        <div className="left">
-          <div className="view-switch">
-            <button
-              className={`view-btn ${viewMode === "week" ? "active" : ""}`}
-              onClick={() => setViewMode("week")}
-            >
-              Tuần
-            </button>
+    <>
+      <div className="sc-container">
+        {/* ===== ACTION BAR ===== */}
+        <div className="sc-actions">
+          <div className="left">
+            <div className="view-switch">
+              <button
+                className={`view-btn ${viewMode === "week" ? "active" : ""}`}
+                onClick={() => setViewMode("week")}
+              >
+                Tuần
+              </button>
 
-            <button
-              className={`view-btn ${viewMode === "month" ? "active" : ""}`}
-              onClick={() => setViewMode("month")}
-            >
-              Tháng
-            </button>
+              <button
+                className={`view-btn ${viewMode === "month" ? "active" : ""}`}
+                onClick={() => setViewMode("month")}
+              >
+                Tháng
+              </button>
+            </div>
+
+            <button className="nav" onClick={gotoPrev}>&lt;</button>
+            <button className="nav" onClick={gotoNext}>&gt;</button>
           </div>
 
-          <button className="nav" onClick={gotoPrev}>
-            &lt;
-          </button>
-          <button className="nav" onClick={gotoNext}>
-            &gt;
-          </button>
+          <div className="center">
+            <h2 className="sc-title">
+              {format(currentDate, "MMMM yyyy")}
+            </h2>
+          </div>
+
+          <div className="right">
+            {viewMode === "month" && (
+              <>
+                <select
+                  className="select"
+                  value={currentDate.getMonth() + 1}
+                  onChange={(e) => {
+                    const d = new Date(currentDate);
+                    d.setMonth(+e.target.value - 1);
+                    setCurrentDate(d);
+                  }}
+                >
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <option key={i} value={i + 1}>
+                      Tháng {i + 1}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  className="select"
+                  value={currentDate.getFullYear()}
+                  onChange={(e) => {
+                    const d = new Date(currentDate);
+                    d.setFullYear(+e.target.value);
+                    setCurrentDate(d);
+                  }}
+                >
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <option key={i} value={2024 + i}>
+                      {2024 + i}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            <button
+              className="today-btn"
+              onClick={() => setCurrentDate(new Date())}
+            >
+              Hôm nay
+            </button>
+          </div>
         </div>
 
-        <div className="right">
-          {viewMode === "month" && (
-            <>
-              <select
-                className="select"
-                value={currentDate.getMonth() + 1}
-                onChange={(e) => {
-                  const newDate = new Date(currentDate);
-                  newDate.setMonth(Number(e.target.value) - 1);
-                  setCurrentDate(newDate);
-                }}
-              >
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <option key={i} value={i + 1}>
-                    Tháng {i + 1}
-                  </option>
-                ))}
-              </select>
+        {/* ===== WEEK HEADER ===== */}
+        <div className="sc-week-header">
+          <div>Thứ 2</div>
+          <div>Thứ 3</div>
+          <div>Thứ 4</div>
+          <div>Thứ 5</div>
+          <div>Thứ 6</div>
+          <div>Thứ 7</div>
+          <div className="sun">Chủ nhật</div>
+        </div>
 
-              <select
-                className="select"
-                value={currentDate.getFullYear()}
-                onChange={(e) => {
-                  const newDate = new Date(currentDate);
-                  newDate.setFullYear(Number(e.target.value));
-                  setCurrentDate(newDate);
-                }}
-              >
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <option key={i} value={2024 + i}>
-                    {2024 + i}
-                  </option>
-                ))}
-              </select>
-            </>
-          )}
+        {loading && <div className="loading">Đang tải...</div>}
 
-          <button className="today-btn" onClick={() => setCurrentDate(new Date())}>
-            Hôm nay
-          </button>
+        {/* ===== CALENDAR BODY ===== */}
+        <div className="sc-body">
+          {viewMode === "month"
+            ? renderMonthCells(events)
+            : renderWeekCells(events)}
         </div>
       </div>
 
-      <div className="sc-week-header">
-        <div>Thứ 2</div>
-        <div>Thứ 3</div>
-        <div>Thứ 4</div>
-        <div>Thứ 5</div>
-        <div>Thứ 6</div>
-        <div>Thứ 7</div>
-        <div className="sun">Chủ nhật</div>
-      </div>
-
-      <div className="sc-body">
-        {viewMode === "month" ? renderMonthCells() : renderWeekCells()}
-      </div>
-
-    </div>
+      {/* ===== DAY POPUP ===== */}
+      {selectedDate && (
+        <DayEventsPopup
+          date={selectedDate}
+          events={popupEvents}
+          onClose={() => setSelectedDate(null)}
+          onChanged={onRefresh ?? (() => {})}
+        />
+      )}
+    </>
   );
 }

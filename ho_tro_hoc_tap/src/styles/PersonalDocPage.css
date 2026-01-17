@@ -1,0 +1,189 @@
+/* ================= ROOT ================= */
+:root {
+  --primary: #6366f1;
+  --primary-soft: #e0e7ff;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #0f172a;
+  --shadow-soft: 0 8px 24px rgba(0,0,0,.08);
+  --shadow-strong: 0 20px 40px rgba(0,0,0,.12);
+}
+
+/* ================= LAYOUT ================= */
+.personal-page {
+  display: grid;
+  grid-template-columns: 260px 1fr 260px;
+  height: 100vh;
+  background: var(--bg);
+  animation: fadeIn .4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ================= SIDEBAR ================= */
+.personal-sidebar,
+.outline {
+  background: var(--card);
+  padding: 18px;
+  box-shadow: var(--shadow-soft);
+  overflow-y: auto;
+}
+
+.personal-sidebar h3,
+.outline h4 {
+  margin-bottom: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ================= DOC ITEM ================= */
+.personal-doc-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.personal-doc-item:hover {
+  background: #f8fafc;
+}
+
+.personal-doc-item.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px #c7d2fe;
+}
+
+/* ================= MAIN ================= */
+.personal-content {
+  padding: 16px 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.personal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* ================= TOOLBAR ================= */
+.draw-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.draw-toolbar button {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #e5e7eb;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .18s ease;
+}
+
+.draw-toolbar button:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.draw-toolbar button:active {
+  transform: scale(.96);
+}
+
+/* nếu muốn active button theo tool thì gắn class active */
+.draw-toolbar button.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(99,102,241,.4);
+}
+
+/* ================= PDF ================= */
+.pdf-wrapper {
+  flex: 1;
+  background: var(--card);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow-strong);
+  animation: popUp .35s ease;
+}
+
+@keyframes popUp {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.pdf-layer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* react-pdf-viewer */
+.pdf-layer .rpv-core__viewer {
+  height: 100%;
+}
+
+/* ================= CANVAS ================= */
+.draw-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+/* KHÔNG tool → cho scroll PDF */
+.draw-canvas:not(.active) {
+  pointer-events: none;
+  cursor: default;
+}
+
+/* ================= OUTLINE ================= */
+.outline {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.outline h4 {
+  margin-bottom: 10px;
+}
+
+.outline span {
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ================= SCROLLBAR ================= */
+.personal-sidebar::-webkit-scrollbar,
+.outline::-webkit-scrollbar {
+  width: 6px;
+}
+
+.personal-sidebar::-webkit-scrollbar-thumb,
+.outline::-webkit-scrollbar-thumb {
+  background: var(--primary-soft);
+  border-radius: 6px;
+}
+
+/* ================= NICE DETAILS ================= */
+button,
+canvas {
+  user-select: none;
+}
+

@@ -1,0 +1,67 @@
+.edit-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+}
+
+.edit-card {
+  width: 500px;
+  max-height: 85vh;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  animation: popupFadeIn 0.25s ease;
+}
+
+@keyframes popupFadeIn {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* HEADER */
+.edit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.edit-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.edit-header button {
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+}
+
+.edit-header button:hover {
+  color: #000;
+}
+
+/* BODY */
+.edit-body {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 12px;
+  padding-right: 6px;
+}
