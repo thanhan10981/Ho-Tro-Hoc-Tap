@@ -1,0 +1,107 @@
+.fcs-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.fcs-modal {
+  width: 520px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  animation: fcsScaleIn 0.25s ease;
+}
+
+@keyframes fcsScaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.fcs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fcs-close {
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.fcs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.fcs-form label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.fcs-form input,
+.fcs-form select,
+.fcs-form textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.fcs-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.fcs-submit {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #f97316;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #fff;
+  animation: slideIn 0.3s ease;
+  z-index: 2000;
+}
+
+.toast-success {
+  background: #22c55e;
+}
+
+.toast-error {
+  background: #ef4444;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

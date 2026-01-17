@@ -341,7 +341,7 @@
 /* ===== 2 COLUMN WRAPPER ===== */
 .assistant-events {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 3fr 1fr;
   gap: 28px;
   margin-top: 40px;
 }
@@ -433,6 +433,10 @@
 
 .badge.normal {
   background: #22c55e;
+}
+.search-box input {
+  color: #111827;          /* chữ đen */
+  background: transparent;
 }
 
 /* Time text */
@@ -657,4 +661,85 @@
 
 .suggest-btn:hover {
   filter: brightness(0.92);
+}
+.hero-left {
+  flex: 1;                 
+  max-width: 650px;        
+}
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.search-box {
+  flex: 1;                 
+  min-width: 0;
+  height: 48px;
+}
+.ask-ai-btn {
+  height: 48px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* --------------------------------------------------------- */
+.assistant-chat {
+  height: 360px;            /* chỉnh theo layout của bạn */
+  overflow-y: auto;
+  padding: 12px 8px;
+  border-top: 1px solid #eee;
+
+}
+.user-msg {
+  max-width: 70%;
+  margin-left: auto;        /* đẩy sang phải */
+  margin-bottom: 8px;
+  padding: 10px 14px;
+
+  background: #e8f0ff;
+  color: #000000;
+
+  border-radius: 14px;
+  border-bottom-right-radius: 4px;
+
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+.ai-msg {
+  max-width: 75%;
+  margin-right: auto;       /* giữ bên trái */
+  margin-bottom: 16px;
+  padding: 12px 14px;
+
+  background: #f5f7fa;
+  color: #000000;
+
+  border-radius: 14px;
+  border-bottom-left-radius: 4px;
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+.ai-msg h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #2563eb;
+}
+
+.ai-msg ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.ai-msg li {
+  font-size: 13px;
 }

@@ -14,6 +14,7 @@ import QuizFlashcard from "../pages/QuizFlashcard/QuizFlashcard";
 import Login from "../../features/auth/pages/Login";
 import Register from "../../features/auth/pages/Register";
 import PrivateRoute from "./PrivateRoute";
+import QuizPlay from "../../features/QuizFlashcard/component/QuizPlay";
 
 export default function AppRoutes() {
   return (
@@ -56,6 +57,7 @@ export default function AppRoutes() {
           </PrivateRoute>
         }
       />
+      <Route path="/quiz/:maQuiz" element={<QuizPlay />} />
 
       <Route
         path="/personalStore/:id"
