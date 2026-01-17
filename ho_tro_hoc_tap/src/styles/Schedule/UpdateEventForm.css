@@ -1,0 +1,108 @@
+/* ===== MODAL FORM ===== */
+.modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 2px;
+}
+
+.modal h3 {
+  margin-bottom: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+}
+
+.modal h4 {
+  margin-top: 16px;
+  margin-bottom: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ===== INPUT / SELECT / TEXTAREA ===== */
+.modal input,
+.modal select,
+.modal textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+}
+
+/* ===== GRID ===== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ===== LABEL ===== */
+.modal label {
+  font-size: 13px;
+  color: #555;
+  margin-top: 6px;
+}
+
+/* ===== NHẮC NHỞ BUTTON ===== */
+.modal button {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+/* nút xóa nhắc */
+.modal button:not(.primary):not(.secondary) {
+  background: #fee2e2;
+  color: #991b1b;
+  align-self: flex-start;
+}
+
+.modal button:not(.primary):not(.secondary):hover {
+  background: #fecaca;
+}
+
+/* ===== ACTIONS ===== */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.actions button:first-child {
+  background: #4f46e5;
+  color: #fff;
+}
+
+.actions button:first-child:hover {
+  background: #4338ca;
+}
+
+.actions button:last-child {
+  background: #f1f5f9;
+  color: #333;
+}
+
+.actions button:last-child:hover {
+  background: #e2e8f0;
+}

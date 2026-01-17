@@ -12,7 +12,11 @@
 }
 
 .event-form {
+    width: 100%;
+  box-sizing: border-box;
   padding: 24px;
+    max-height: calc(85vh - 80px); /* trừ header + padding */
+  overflow-y: auto;
 }
 
 /* Custom scrollbar */
@@ -180,7 +184,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 25px;
-  width: 97%;
+
 }
 
 .select{
@@ -191,7 +195,7 @@
 .input,
 .select,
 .textarea {
-  width: 95%;
+  width: 100%;
   padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -211,6 +215,10 @@
 /* Textarea */
 .textarea {
   resize: vertical;
+}
+.form-row,
+.form-group {
+  width: 100%;
 }
 
 /* Checkbox hàng ngang */
@@ -268,3 +276,33 @@
   background: #1d4ed8;
 }
 
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
