@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { registerApi } from "../api/auth.api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import "./auth.css";
 
 interface RegisterForm {
   hoTen: string;
@@ -20,7 +21,6 @@ export default function Register() {
   });
 
   const [emailError, setEmailError] = useState<string | null>(null);
-
   const navigate = useNavigate();
 
   const validateEmail = (email: string) =>
@@ -47,28 +47,47 @@ export default function Register() {
       return;
     }
 
-    await registerApi(form);
-    alert("Đăng ký thành công!");
-    navigate("/login");
+    if (form.matKhau !== form.xacNhanMatKhau) {
+      alert("Mật khẩu xác nhận không khớp");
+      return;
+    }
+
+    try {
+      await registerApi(form);
+      alert("Đăng ký thành công!");
+      navigate("/login");
+    } catch (error) {
+      alert("Đăng ký thất bại!");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded w-96 space-y-3">
-        <h2 className="text-xl font-bold text-center">Đăng ký</h2>
+    <div className="auth-wrapper">
+      <div className="auth-card space-y-3">
+        <h2 className="auth-title">Đăng ký</h2>
 
         {(Object.keys(form) as (keyof RegisterForm)[]).map((key) => (
           <div key={key}>
             <input
-              className="w-full border p-2 rounded"
-              placeholder={key}
+              className="auth-input"
+              placeholder={
+                key === "hoTen"
+                  ? "Họ và tên"
+                  : key === "email"
+                  ? "Email"
+                  : key === "matKhau"
+                  ? "Mật khẩu"
+                  : key === "xacNhanMatKhau"
+                  ? "Xác nhận mật khẩu"
+                  : "Lĩnh vực quan tâm"
+              }
               type={key.includes("Khau") ? "password" : "text"}
               value={form[key]}
               onChange={(e) => handleChange(key, e.target.value)}
             />
 
             {key === "email" && emailError && (
-              <p className="text-red-500 text-sm mt-1">{emailError}</p>
+              <p className="auth-error">{emailError}</p>
             )}
           </div>
         ))}
@@ -76,15 +95,14 @@ export default function Register() {
         <button
           onClick={handleRegister}
           disabled={!!emailError || !form.email}
-          className={`w-full p-2 rounded text-white transition
-            ${
-              emailError
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
+          className="auth-btn"
         >
           Đăng ký
         </button>
+
+        <p className="auth-link">
+          Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+        </p>
       </div>
     </div>
   );

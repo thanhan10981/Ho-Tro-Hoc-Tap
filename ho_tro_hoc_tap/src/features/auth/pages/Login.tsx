@@ -2,6 +2,7 @@ import { useState } from "react";
 import { loginApi } from "../api/auth.api";
 import { useAuth } from "../context/useAuth";
 import { useNavigate, Link } from "react-router-dom";
+import "./auth.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -10,18 +11,22 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    const res = await loginApi({ email, matKhau });
-    await loginSuccess(res.token);
-    navigate("/dashboard");
+    try {
+      const res = await loginApi({ email, matKhau });
+      await loginSuccess(res.token);
+      navigate("/dashboard");
+    } catch (error) {
+      alert("Đăng nhập thất bại!");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded w-96 space-y-4">
-        <h2 className="text-xl font-bold text-center">Đăng nhập</h2>
+    <div className="auth-wrapper">
+      <div className="auth-card space-y-4">
+        <h2 className="auth-title">Đăng nhập</h2>
 
         <input
-          className="w-full border p-2 rounded"
+          className="auth-input"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -29,24 +34,18 @@ export default function Login() {
 
         <input
           type="password"
-          className="w-full border p-2 rounded"
+          className="auth-input"
           placeholder="Mật khẩu"
           value={matKhau}
           onChange={(e) => setMatKhau(e.target.value)}
         />
 
-        <button
-          onClick={handleLogin}
-          className="w-full bg-blue-600 text-white p-2 rounded"
-        >
+        <button onClick={handleLogin} className="auth-btn">
           Đăng nhập
         </button>
 
-        <p className="text-sm text-center">
-          Chưa có tài khoản?{" "}
-          <Link to="/register" className="text-blue-600">
-            Đăng ký
-          </Link>
+        <p className="auth-link">
+          Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
         </p>
       </div>
     </div>
