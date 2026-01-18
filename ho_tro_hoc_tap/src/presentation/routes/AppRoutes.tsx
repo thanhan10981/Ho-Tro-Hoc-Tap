@@ -14,6 +14,7 @@ import QuizFlashcard from "../pages/QuizFlashcard/QuizFlashcard";
 import Login from "../../features/auth/pages/Login";
 import Register from "../../features/auth/pages/Register";
 import PrivateRoute from "./PrivateRoute";
+import PublicPreview from "../pages/KnowledgeStorage/PublicPreview";
 
 export default function AppRoutes() {
   return (
@@ -22,6 +23,8 @@ export default function AppRoutes() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/preview/:id" element={<PublicPreview />} />
+
 
       {/* ===== PRIVATE ROUTES ===== */}
       <Route

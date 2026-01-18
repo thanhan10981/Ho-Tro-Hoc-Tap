@@ -1,4 +1,3 @@
-import  { useState } from "react";
 import "../../../styles/KnowledgeStorage.css";
 import {
   RiStarFill,
@@ -9,123 +8,87 @@ import {
   RiSearchLine,
   RiUpload2Line,
   RiArrowLeftSLine,
-  RiArrowRightSLine
+  RiArrowRightSLine,
 } from "react-icons/ri";
-import { useNavigate } from "react-router-dom"
-
-/* ================= TYPES ================= */
-type Mode = "common" | "personal";
-
-type Doc = {
-  id: number;
-  title: string;
-  desc: string;
-  subject: string;
-  type: string;
-  size: string;
-  time: string;
-  views?: number;
-  downloads?: number;
-  rating?: number;
-  status?: "done" | "todo";
-};
-
-/* ================= MOCK DATA ================= */
-const COMMON_DOCS: Doc[] = Array.from({ length: 20 }).map((_, i) => ({
-  id: i + 1,
-  title: `Tài liệu số ${i + 1} – Chủ đề nâng cao`,
-  desc: "Mô tả tài liệu mẫu dùng để hiển thị xem trước.",
-  subject: i % 2 === 0 ? "Toán học" : "CNTT",
-  type: "PDF",
-  size: "2.0 MB",
-  time: `${i + 1} ngày trước`,
-  rating: 4.5,
-  views: 1000 + i * 3,
-  downloads: 200 + i * 2,
-}));
-
-const PERSONAL_DOCS: Doc[] = [
-  {
-    id: 1,
-    title: "Giải tích 1 – Bài 1",
-    desc: "Giới hạn và liên tục",
-    subject: "Toán học",
-    type: "PDF",
-    size: "1.8 MB",
-    time: "2 ngày trước",
-    status: "done",
-  },
-  {
-    id: 2,
-    title: "Cấu trúc dữ liệu – Stack",
-    desc: "Khái niệm và ví dụ",
-    subject: "CNTT",
-    type: "PDF",
-    size: "2.4 MB",
-    time: "5 ngày trước",
-    status: "todo",
-  },
-];
-type PersonalDoc = {
-  id: number;
-  title: string;
-  type: string;
-  content: string;
-  updatedAt: string;
-};
+import { useKnowledgeStorage } from "../../../features/KnowledgeStorage/useKnowledgeStorage";
+import { useNavigate } from "react-router-dom";
+import {
+  increaseDownload,
+  increaseView,
+} from "../../../features/KnowledgeStorage/knowledge";
+import { downloadDoc } from "../../../features/KnowledgeStorage/knowledge";
+import { useState } from "react";
+import { saveToPersonal as saveToPersonalApi } from "../../../features/KnowledgeStorage/knowledge";
 
 /* ================= PAGE ================= */
 export default function KnowledgeStoragePage() {
+  const token = localStorage.getItem("token") || "";
+  const [previewError, setPreviewError] = useState(false);
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("common");
-  const [preview, setPreview] = useState<Doc | null>(null);
-  const [uploadOpen, setUploadOpen] = useState(false);
-  const [page, setPage] = useState(1);
+  const FILE_TYPES = ["PDF", "DOCX", "PPTX", "XLSX"];
+  const {
+    /* mode */
+    mode,
+    setMode,
 
-  const ITEMS = 6;
-  const data = mode === "common" ? COMMON_DOCS : PERSONAL_DOCS;
-  const totalPages = Math.ceil(data.length / ITEMS);
+    /* sidebar */
+    sidebarLinhVuc,
+    capBacList,
+    chuDeList,
+    activeLinhVuc,
+    setActiveLinhVuc,
+    activeCapBac,
+    setActiveCapBac,
+    activeChuDe,
+    setActiveChuDe,
 
-  const pageData = data.slice(
-    (page - 1) * ITEMS,
-    page * ITEMS
-  );
+    /* search */
+    docs,
+    totalDocs,
+    keyword,
+    setKeyword,
+    rating,
+    setRating,
+    type,
+    setType,
 
-  function saveToPersonal(doc: Doc) {
-  const stored: PersonalDoc[] = JSON.parse(
-    localStorage.getItem("personalDocs") || "[]"
-  );
+    /* ui */
+    preview,
+    setPreview,
+    uploadOpen,
+    setUploadOpen,
+    page,
+    setPage,
+    ITEMS,
 
-  const exists = stored.some(d => d.title === doc.title);
-  if (exists) {
-    alert("Tài liệu đã tồn tại trong kho cá nhân");
-    return;
-  }
+    /* actions */
+    // saveToPersonal,
 
-  const newDoc: PersonalDoc = {
-    id: Date.now(),
-    title: doc.title,
-    type: doc.type,
-    content: "",
-    updatedAt: new Date().toISOString(),
-  };
+    /* upload 🔥 */
+    setFile,
+    title,
+    setTitle,
+    description,
+    setDescription,
+    setCapBacId,
+    setLinhVucId,
+    setChuDeId,
+    uploading,
+    submitUpload,
+    linhVucId,
+    chuDeId,
+  } = useKnowledgeStorage();
 
-  localStorage.setItem(
-    "personalDocs",
-    JSON.stringify([...stored, newDoc])
-  );
-
-  alert("Đã lưu vào kho cá nhân");
-}
-
+  const totalPages = Math.ceil(totalDocs / ITEMS);
 
   return (
     <div className="ks-page">
-
       {/* ================= HEADER ================= */}
       <div className="ks-header">
         <div>
-          <h1>{mode === "common" ? "Kho kiến thức" : "Kho kiến thức cá nhân"}</h1>
+          <h1>
+            {mode === "common" ? "Kho kiến thức" : "Kho kiến thức cá nhân"}
+          </h1>
           <p>
             {mode === "common"
               ? "Tìm kiếm và tra cứu tài liệu học tập"
@@ -163,6 +126,11 @@ export default function KnowledgeStoragePage() {
         <div className="ks-search">
           <RiSearchLine />
           <input
+            value={keyword}
+            onChange={(e) => {
+              setKeyword(e.target.value);
+              setPage(1); // reset page khi search
+            }}
             placeholder={
               mode === "common"
                 ? "Tìm kiếm tài liệu, bài giảng, ghi chú..."
@@ -171,69 +139,138 @@ export default function KnowledgeStoragePage() {
           />
         </div>
 
-
-        <select><option>Tất cả môn học</option></select>
-        <select><option>Tất cả loại tài liệu</option></select>
-        <select><option>Độ phổ biến</option></select>
-
         <span className="ks-count">
           {mode === "common"
-            ? `Tìm thấy ${COMMON_DOCS.length} tài liệu`
-            : `Đã lưu ${PERSONAL_DOCS.length} tài liệu`}
+            ? `Tìm thấy ${totalDocs} tài liệu`
+            : `Đã lưu ${docs.length} tài liệu`}
         </span>
       </div>
 
       {/* ================= CONTENT ================= */}
       <div className="ks-body">
-
         {/* SIDEBAR FILTER */}
         {mode === "common" && (
           <aside className="ks-filter">
-            <h3>Danh mục chính</h3>
+            {/* ===== LĨNH VỰC ===== */}
+            <h3>Lĩnh vực</h3>
             <ul>
-              <li className="active">Tất cả tài liệu <span>247</span></li>
-              <li>Toán cao cấp <span>68</span></li>
-              <li>Vật lý <span>45</span></li>
-              <li>CNTT <span>56</span></li>
+              <li
+                className={!activeLinhVuc ? "active" : ""}
+                onClick={() => setActiveLinhVuc(null)}
+              >
+                Tất cả
+              </li>
+
+              {sidebarLinhVuc.map((lv) => (
+                <li
+                  key={lv.id}
+                  className={activeLinhVuc === lv.id ? "active" : ""}
+                  onClick={() => setActiveLinhVuc(lv.id)}
+                >
+                  {lv.name}
+                  <span>{lv.count}</span>
+                </li>
+              ))}
             </ul>
 
+            {/* ===== CHỦ ĐỀ (PHỤ THUỘC LĨNH VỰC) ===== */}
+            {chuDeList.length > 0 && (
+              <>
+                <h3>Chủ đề</h3>
+                <ul>
+                  {chuDeList.map((cd) => (
+                    <li
+                      key={cd.id}
+                      className={activeChuDe === cd.id ? "active" : ""}
+                      onClick={() => setActiveChuDe(cd.id)}
+                    >
+                      {cd.tenChuDe}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {/* ===== LOẠI FILE ===== */}
             <h3>Loại tài liệu</h3>
-            <label><input type="checkbox" /> PDF</label>
-            <label><input type="checkbox" /> Video</label>
+            <ul>
+              <li
+                className={!type ? "active" : ""}
+                onClick={() => setType(null)}
+              >
+                Tất cả
+              </li>
 
+              {FILE_TYPES.map((ft) => (
+                <li
+                  key={ft}
+                  className={type === ft ? "active" : ""}
+                  onClick={() => {
+                    setType(ft);
+                    setPage(1);
+                  }}
+                >
+                  {ft}
+                </li>
+              ))}
+            </ul>
+
+            {/* ===== CẤP BẬC ===== */}
+            <h3>Cấp bậc</h3>
+            <ul>
+              {capBacList.map((cb) => (
+                <li
+                  key={cb.id}
+                  className={activeCapBac === cb.id ? "active" : ""}
+                  onClick={() => setActiveCapBac(cb.id)}
+                >
+                  {cb.tenCapBac}
+                </li>
+              ))}
+            </ul>
+
+            {/* ===== ĐÁNH GIÁ SAO ===== */}
             <h3>Đánh giá</h3>
+
+            {/* Tất cả */}
             <label className="ks-rating">
-              <input type="radio" name="rate" />
-              <span className="stars">
-                <RiStarFill />
-                <RiStarFill />
-                <RiStarFill />
-                <RiStarFill />
-                <RiStarFill />
-              </span>
-              <span>5 sao</span>
+              <input
+                type="radio"
+                name="rate"
+                checked={rating === null}
+                onChange={() => {
+                  setRating(null);
+                  setPage(1);
+                }}
+              />
+              <span>Tất cả</span>
             </label>
 
-            <label className="ks-rating">
-              <input type="radio" name="rate" />
-              <span className="stars">
-                <RiStarFill />
-                <RiStarFill />
-                <RiStarFill />
-                <RiStarFill />
-                <RiStarLine />
-              </span>
-              <span>4 sao</span>
-            </label>
-
-            <h3>Kích thước file</h3>
-            <input type="range" />
+            {[5, 4, 3, 2, 1].map((rate) => (
+              <label key={rate} className="ks-rating">
+                <input
+                  type="radio"
+                  name="rate"
+                  checked={rating === rate}
+                  onChange={() => {
+                    setRating(rate);
+                    setPage(1);
+                  }}
+                />
+                <span className="stars">
+                  {Array.from({ length: 5 }).map((_, i) =>
+                    i < rate ? <RiStarFill key={i} /> : <RiStarLine key={i} />
+                  )}
+                </span>
+                <span>{rate}</span>
+              </label>
+            ))}
           </aside>
         )}
 
         {/* GRID */}
         <div className="ks-grid">
-          {pageData.map((d) => (
+          {docs.map((d) => (
             <div
               className="ks-card"
               key={d.id}
@@ -241,12 +278,13 @@ export default function KnowledgeStoragePage() {
                 if (mode === "common") {
                   setPreview(d);
                 } else {
-                  navigate(`/personalStore/${d.id}`);
+                navigate(`/personalStore/${"docId" in d ? d.docId : d.id}`);
+
                 }
               }}
             >
               <div className="ks-thumb">
-                {/* Badge PDF */}
+                {/* Badge type */}
                 <span className="ks-badge">{d.type}</span>
 
                 {/* Hover overlay */}
@@ -256,6 +294,7 @@ export default function KnowledgeStoragePage() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setPreview(d);
+                      increaseView(d.id);
                     }}
                   >
                     <RiEyeLine />
@@ -264,14 +303,37 @@ export default function KnowledgeStoragePage() {
 
                   <div className="thumb-actions">
                     <button
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        downloadDoc(d.id, d.title, d.type);
+                        increaseDownload(d.id);
+                      }}
                       title="Tải xuống"
                     >
                       <RiDownloadLine />
                     </button>
-
                     <button
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+
+                        const shareUrl = `${window.location.origin}/preview/${d.id}`;
+
+                        if (navigator.share) {
+                          navigator
+                            .share({
+                              title: d.title,
+                              text: d.description || "Chia sẻ tài liệu học tập",
+                              url: shareUrl,
+                            })
+                            .catch(() => {});
+                        } else {
+                          // fallback cho browser cũ
+                          navigator.clipboard.writeText(shareUrl);
+                          alert(
+                            "Trình duyệt không hỗ trợ chia sẻ, đã copy link"
+                          );
+                        }
+                      }}
                       title="Chia sẻ"
                     >
                       <RiShareLine />
@@ -279,63 +341,60 @@ export default function KnowledgeStoragePage() {
                   </div>
                 </div>
               </div>
+
               <div className="ks-card-body">
-              <h4>{d.title}</h4>
-              <p className="muted">{d.desc}</p>
+                <h4>{d.title}</h4>
+                <p className="muted">{d.description}</p>
 
-              <div className="ks-tags">
-                <span>{d.subject}</span>
-                <span>{d.type}</span>
-              </div>
+                <div className="ks-tags">
+                  {/* <span>{d.linhVuc}</span> */}
+                  {/* <span>{d.subject}</span> */}
+                  <span>{d.type}</span>
+                </div>
 
-              {mode === "common" && (
-                <div className="ks-stats">
-                  <span className="rating">
-                    <RiStarFill /> {d.rating}
-                  </span>
+                {mode === "common" && (
+                  <div className="ks-stats">
+                    <span className="rating">
+                      <RiStarFill /> {Number(d.rating || 0).toFixed(1)}
+                    </span>
+                    <span>
+                      <RiEyeLine /> {d.views ?? 0}
+                    </span>
+                    <span>
+                      <RiDownloadLine /> {d.downloads ?? 0}
+                    </span>
+                  </div>
+                )}
+
+                {mode === "personal" && "status" in d && (
+                  <div className="ks-personal-actions">
+                    <span className={d.status === "done" ? "done" : "todo"}>
+                      {d.status === "done" ? "Đã học" : "Chưa học"}
+                    </span>
+                    <button>Ghi chú</button>
+                    <button className="danger">Xoá</button>
+                  </div>
+                )}
+
+                <div className="ks-meta">
+                  <span>{(Number(d.size) / 1024 / 1024).toFixed(1)} MB</span>
                   <span>
-                    <RiEyeLine /> {d.views}
-                  </span>
-                  <span>
-                    <RiDownloadLine /> {d.downloads}
+                    {new Date(d.createdAt).toLocaleDateString("vi-VN")}
                   </span>
                 </div>
-              )}
-
-              {mode === "personal" && (
-                <div className="ks-personal-actions">
-                  <span className={d.status === "done" ? "done" : "todo"}>
-                    {d.status === "done" ? "Đã học" : "Chưa học"}
-                  </span>
-                  <button>Ghi chú</button>
-                  <button className="danger">Xoá</button>
-                </div>
-              )}
-
-              <div className="ks-meta">
-                <span>{d.size}</span>
-                <span>{d.time}</span>
               </div>
-
-              
-</div>
             </div>
           ))}
         </div>
       </div>
 
       {/* ================= PAGINATION ================= */}
-      {mode === "common" && (
+      {mode === "common" && totalPages > 1 && (
         <div className="ks-pagination">
-          {/* PREV */}
-          <button
-            disabled={page === 1}
-            onClick={() => setPage(p => p - 1)}
-          >
+          <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
             <RiArrowLeftSLine />
           </button>
 
-          {/* PAGE NUMBERS */}
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
@@ -346,89 +405,148 @@ export default function KnowledgeStoragePage() {
             </button>
           ))}
 
-          {/* NEXT */}
           <button
             disabled={page === totalPages}
-            onClick={() => setPage(p => p + 1)}
+            onClick={() => setPage((p) => p + 1)}
           >
             <RiArrowRightSLine />
           </button>
         </div>
       )}
 
-
       {/* ================= PREVIEW MODAL ================= */}
       {preview && (
-  <div className="ks-modal">
-    <div className="backdrop" onClick={() => setPreview(null)} />
+        <div className="ks-modal">
+          <div className="backdrop" onClick={() => setPreview(null)} />
 
-    <div className="modal-box preview-large">
-      {/* HEADER */}
-      <header className="modal-header">
-        <div>
-          <h2>{preview.title}</h2>
-          <p className="muted">
-            {preview.type} • {preview.size} • {preview.time}
-          </p>
-        </div>
+          <div className="modal-box preview-large">
+            {/* HEADER */}
+            <header className="modal-header">
+              <div>
+                <h2>{preview.title}</h2>
+                <p className="muted">
+                  {preview.type} •{" "}
+                  {(Number(preview.size) / 1024 / 1024).toFixed(1)} MB •{" "}
+                  {new Date(preview.createdAt).toLocaleDateString("vi-VN")}
+                </p>
+              </div>
 
-        <button
-          className="modal-close"
-          onClick={() => setPreview(null)}
-        >
-          ×
-        </button>
-      </header>
+              <button className="modal-close" onClick={() => setPreview(null)}>
+                ×
+              </button>
+            </header>
 
-      {/* BODY */}
-      <div className="modal-body">
-        {/* PREVIEW AREA */}
-        <div className="preview-area pdf-preview">
-          <div className="pdf-page">Trang 1</div>
-          <div className="pdf-page">Trang 2</div>
-          <div className="pdf-page">Trang 3</div>
+            {/* BODY */}
+            <div className="modal-body">
+              {/* PREVIEW AREA */}
+              <div className="preview-area pdf-preview">
+                {preview.type === "PDF" && (
+                  <iframe
+                    src={`http://localhost:9090/api/knowledge/preview/${preview.id}`}
+                    width="100%"
+                    height="600"
+                    style={{ border: "none" }}
+                  />
+                )}
+                {/* ===== DOC / DOCX: preview-office ===== */}
 
-          {/* PAGINATION */}
-          <div className="pdf-controls">
-            <button>‹</button>
-            <span>1 / 10</span>
-            <button>›</button>
+                {(preview.type === "DOC" || preview.type === "DOCX") && (
+                  <iframe
+                    src={`https://docs.google.com/gview?url=${encodeURIComponent(
+                      `http://localhost:9090/api/knowledge/download/${preview.id}`
+                    )}&embedded=true`}
+                    width="100%"
+                    height="600"
+                    style={{ border: "none" }}
+                    onError={() => setPreviewError(true)}
+                  />
+                )}
+
+                {/* ===== KHÔNG HỖ TRỢ ===== */}
+                {(preview.type === "DOC" || preview.type === "DOCX") &&
+                  previewError && (
+                    <div className="doc-preview-placeholder">
+                      <p>⚠️ Không thể xem trước tài liệu này</p>
+                      <p>👉 Vui lòng tải file về để xem</p>
+                      <button
+                        onClick={() =>
+                          downloadDoc(preview.id, preview.title, preview.type)
+                        }
+                      >
+                        Tải file
+                      </button>
+                    </div>
+                  )}
+              </div>
+
+              {/* INFO AREA */}
+              <div className="info-area">
+                <h4>Thông tin tài liệu</h4>
+
+                <ul className="doc-info">
+                  <li>
+                    <strong>Lĩnh vực:</strong>{" "}
+                    {preview.chuDe?.tenChuDe ||
+                      preview.linhVuc?.name ||
+                      "Chưa phân loại"}
+                  </li>
+
+                  <li>
+                    <strong>Loại:</strong> {preview.type}
+                  </li>
+
+                  <li>
+                    <strong>Dung lượng:</strong>{" "}
+                    {(Number(preview.size) / 1024).toFixed(0)} KB
+                  </li>
+
+                  <li>
+                    <strong>Lượt xem:</strong> {preview.views ?? 0}
+                  </li>
+
+                  <li>
+                    <strong>Lượt tải:</strong> {preview.downloads ?? 0}
+                  </li>
+
+                  <li>
+                    <strong>Đánh giá:</strong>{" "}
+                    {preview.rating != null
+                      ? `${preview.rating} / 5`
+                      : "Chưa có đánh giá"}
+                  </li>
+                </ul>
+
+                <h4>Mô tả</h4>
+                <p>{preview.description}</p>
+
+                <p className="muted small">
+                  * Chỉ cho phép xem trước một số trang đầu
+                </p>
+
+                <button
+                  className="btn-primary full"
+                  onClick={async () => {
+                    const token = localStorage.getItem("token");
+                    if (!token) {
+                      alert("Bạn chưa đăng nhập");
+                      return;
+                    }
+
+                    try {
+                      await saveToPersonalApi(preview.id);
+                      alert("✅ Đã lưu vào kho cá nhân");
+                    } catch {
+                      alert("⚠️ Tài liệu đã có trong kho cá nhân");
+                    }
+                  }}
+                >
+                  Lưu vào kho cá nhân
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* INFO AREA */}
-        <div className="info-area">
-          <h4>Thông tin tài liệu</h4>
-
-          <ul className="doc-info">
-            <li><strong>Môn học:</strong> {preview.subject}</li>
-            <li><strong>Loại:</strong> {preview.type}</li>
-            <li><strong>Dung lượng:</strong> {preview.size}</li>
-            <li><strong>Lượt xem:</strong> {preview.views ?? "—"}</li>
-            <li><strong>Lượt tải:</strong> {preview.downloads ?? "—"}</li>
-            <li><strong>Đánh giá:</strong> {preview.rating ?? "—"} / 5</li>
-          </ul>
-
-          <h4>Mô tả</h4>
-          <p>{preview.desc}</p>
-
-          <p className="muted small">
-            * Chỉ cho phép xem trước một số trang đầu
-          </p>
-
-          <button
-            className="btn-primary full"
-            onClick={() => saveToPersonal(preview)}
-          >
-            Lưu vào kho cá nhân
-          </button>
-
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
+      )}
 
       {/* ===== UPLOAD MODAL (ĐÃ ĐỦ TRI THỨC) ===== */}
       {uploadOpen && (
@@ -445,16 +563,62 @@ export default function KnowledgeStoragePage() {
               </button>
             </header>
 
-
             <div className="upload-body">
-              <select><option>Cấp bậc học</option></select>
-              <select><option>Lĩnh vực</option></select>
-              <select><option>Chủ đề</option></select>
-              <input placeholder="Nhãn (VD: Giải tích, Ôn tập)" />
-              <input type="file" />
-              <input placeholder="Tiêu đề tài liệu" />
-              <textarea placeholder="Mô tả ngắn gọn nội dung tài liệu" />
-              <button className="btn-primary">Tải lên và xuất bản</button>
+              <select onChange={(e) => setCapBacId(Number(e.target.value))}>
+                <option value="">Cấp bậc học</option>
+                {capBacList.map((cb) => (
+                  <option key={cb.id} value={cb.id}>
+                    {cb.tenCapBac}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={linhVucId ?? ""}
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  setActiveLinhVuc(id); // ✅ trigger fetchChuDe
+                  setLinhVucId(id); // ✅ dùng cho upload
+                  setChuDeId(null); // ✅ reset chủ đề cũ
+                }}
+              >
+                <option value="">Lĩnh vực</option>
+                {sidebarLinhVuc.map((lv) => (
+                  <option key={lv.id} value={lv.id}>
+                    {lv.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={chuDeId ?? ""}
+                onChange={(e) => setChuDeId(Number(e.target.value))}
+              >
+                <option value="">Chủ đề</option>
+                {chuDeList.map((cd) => (
+                  <option key={cd.id} value={cd.id}>
+                    {cd.tenChuDe}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="file"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+              <input value={title} onChange={(e) => setTitle(e.target.value)} />
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+
+              <button
+                className="btn-primary"
+                disabled={uploading}
+                onClick={() => submitUpload(token)}
+              >
+                {" "}
+                {uploading ? "Đang tải..." : "Tải lên và xuất bản"}
+              </button>
             </div>
           </div>
         </div>

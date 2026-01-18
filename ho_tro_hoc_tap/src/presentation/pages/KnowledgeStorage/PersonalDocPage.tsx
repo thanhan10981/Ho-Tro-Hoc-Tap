@@ -1,35 +1,57 @@
 import { useEffect, useRef, useState } from "react";
-import { Worker, Viewer } from "@react-pdf-viewer/core";
-import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
+import { useParams } from "react-router-dom";
 import * as fabric from "fabric";
-
-
-import "@react-pdf-viewer/core/lib/styles/index.css";
-import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import "../../../styles/PersonalDocPage.css";
 
-type Tool = "draw" | "highlight" | "text" | "erase" | null;
+/* ===== TYPES ===== */
+type Tool = "draw" | "highlight" | "erase" | null;
 
 type Note = {
   id: string;
-  content: string;
-  createdAt: number;
+  noiDung: string;
+  createdAt: string;
 };
 
-export default function PersonalDocPage() {
-  const layoutPluginInstance = defaultLayoutPlugin();
+type PersonalDoc = {
+  id: number;
+  title: string;
+  type: string;
+  size: number;
+  filePath: string;
+  savedAt: string;
+  status: string;
+};
 
+const API = "http://localhost:9090";
+
+export default function PersonalDocPage() {
+  const { docId } = useParams();
+  const docIdNum = Number(docId);
+  const token = localStorage.getItem("token");
+
+  /* ===== DATA ===== */
+  const [doc, setDoc] = useState<PersonalDoc | null>(null);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [tool, setTool] = useState<Tool>(null);
+
+  /* ===== CANVAS ===== */
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pdfLayerRef = useRef<HTMLDivElement | null>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
 
-  const [tool, setTool] = useState<Tool>(null);
+  /* ================= LOAD DOC DETAIL ================= */
+  useEffect(() => {
+    if (!docIdNum) return;
 
-  /* ===== STATE GHI CHÚ ===== */
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+    fetch(`${API}/api/personal-library/${docIdNum}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then(setDoc)
+      .catch(console.error);
+  }, [docIdNum]);
 
-  /* ===== INIT CANVAS ===== */
+  /* ================= INIT CANVAS ================= */
   useEffect(() => {
     if (!canvasRef.current || !pdfLayerRef.current) return;
 
@@ -40,9 +62,10 @@ export default function PersonalDocPage() {
 
     const resize = () => {
       const rect = pdfLayerRef.current!.getBoundingClientRect();
-    canvas.setDimensions({ width: rect.width });
-canvas.setDimensions({ height: rect.height });
-
+      canvas.setDimensions({
+        width: rect.width,
+        height: rect.height,
+      });
       canvas.renderAll();
     };
 
@@ -58,190 +81,177 @@ canvas.setDimensions({ height: rect.height });
     };
   }, []);
 
-  /* ===== TOOL HANDLER ===== */
+  /* ================= LOAD CANVAS ================= */
+  useEffect(() => {
+    if (!fabricRef.current || !docIdNum) return;
+
+    fetch(`${API}/api/personal-docs/${docIdNum}/canvas`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.canvasJson) {
+          fabricRef.current!.loadFromJSON(
+            data.canvasJson,
+            fabricRef.current!.renderAll.bind(fabricRef.current)
+          );
+        }
+      })
+      .catch(console.error);
+  }, [docIdNum]);
+
+  /* ================= TOOL HANDLER ================= */
   useEffect(() => {
     const canvas = fabricRef.current;
     if (!canvas) return;
 
     canvas.isDrawingMode = false;
-    canvas.off("mouse:down");
-    canvas.off("mouse:up");
+    canvas.off();
 
-    /* ✏️ DRAW */
     if (tool === "draw") {
       const brush = new fabric.PencilBrush(canvas);
       brush.color = "#111";
       brush.width = 2;
-      brush.decimate = 0.4;
       canvas.freeDrawingBrush = brush;
       canvas.isDrawingMode = true;
     }
 
-    /* 🖍 HIGHLIGHT (2 line giả lập) */
     if (tool === "highlight") {
-      let startX = 0;
-      let startY = 0;
+      let x = 0;
+      let y = 0;
 
       canvas.on("mouse:down", (opt) => {
-      const p = canvas.getScenePoint(opt.e);
-
-        startX = p.x;
-        startY = p.y;
+        const p = canvas.getScenePoint(opt.e);
+        x = p.x;
+        y = p.y;
       });
 
       canvas.on("mouse:up", (opt) => {
         const p = canvas.getScenePoint(opt.e);
-
-        const offset = 6;
-
-        const makeLine = (dy: number) =>
-          new fabric.Line([startX, startY + dy, p.x, p.y + dy], {
+        canvas.add(
+          new fabric.Line([x, y, p.x, p.y], {
             stroke: "rgba(255,230,0,0.45)",
-            strokeWidth: 6,
-            selectable: true,
+            strokeWidth: 10,
             globalCompositeOperation: "multiply",
-          });
-
-        canvas.add(makeLine(-offset), makeLine(offset));
-        canvas.renderAll();
+          })
+        );
       });
     }
 
-    /* 🧽 ERASE */
     if (tool === "erase") {
       canvas.on("mouse:down", (opt) => {
-        if (opt.target) {
-          canvas.remove(opt.target);
-          canvas.renderAll();
-        }
+        if (opt.target) canvas.remove(opt.target);
       });
     }
   }, [tool]);
 
-  /* ===== TẠO NOTE MỚI ===== */
-  const createNote = () => {
-    const id = crypto.randomUUID();
-    setNotes((prev) => [
-      { id, content: "", createdAt: Date.now() },
-      ...prev,
-    ]);
-    setActiveNoteId(id);
+  /* ================= SAVE CANVAS ================= */
+  const saveCanvas = () => {
+    if (!fabricRef.current) return;
+
+    fetch(`${API}/api/personal-docs/${docIdNum}/canvas`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(fabricRef.current.toJSON()),
+    });
   };
 
-  return (
-    <div className="personal-page">
-      {/* ===== SIDEBAR TRÁI ===== */}
-      <aside className="personal-sidebar">
-        <h3>Tài liệu đã lưu</h3>
-        <div className="personal-doc-item active">
-          Tomato TOEIC – Part 5 & 6
-        </div>
-      </aside>
+  /* ================= NOTES ================= */
+useEffect(() => {
+  if (!docIdNum) return;
 
-      {/* ===== MAIN ===== */}
-      <main className="personal-content">
-        <div className="personal-header">
-          <h2>Tomato TOEIC – Part 5 & 6</h2>
-          <span>Cập nhật: 29/12/2025</span>
-        </div>
+  console.log("📌 loading docId =", docIdNum);
+  console.log("📌 token =", token);
+
+  fetch(`${API}/api/personal-library/${docIdNum}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then(async (res) => {
+      console.log("📌 status =", res.status);
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`API error ${res.status}: ${text}`);
+      }
+
+      return res.json();
+    })
+    .then((data) => {
+      console.log("📌 doc data =", data);
+      setDoc(data);
+    })
+    .catch((err) => {
+      console.error("❌ load doc failed:", err);
+    });
+}, [docIdNum, token]);
+
+
+  const addNote = () => {
+    fetch(`${API}/api/personal-docs/${docIdNum}/notes`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(""),
+    })
+      .then((res) => res.json())
+      .then((n) => setNotes((prev) => [n, ...prev]));
+  };
+if (!doc) {
+  return <p>Đang tải...</p>;
+}
+
+return (
+  <div className="personal-page">
+    <main className="personal-content">
+      <div className="personal-header">
+        <h2>{doc.title}</h2>
+        <span>
+          Lưu ngày: {new Date(doc.savedAt).toLocaleDateString("vi-VN")}
+        </span>
+      </div>
 
         <div className="draw-toolbar">
           <button onClick={() => setTool("draw")}>✏️ Draw</button>
           <button onClick={() => setTool("highlight")}>🖍 Highlight</button>
-          <button onClick={createNote}>📝 Note</button>
+          <button onClick={addNote}>📝 Note</button>
           <button onClick={() => setTool("erase")}>🧽 Erase</button>
+          <button onClick={saveCanvas}>💾 Save</button>
         </div>
 
         <div className="pdf-wrapper">
           <div className="pdf-layer" ref={pdfLayerRef}>
-            <Worker workerUrl="/pdf.worker.min.js">
-              <Viewer
-                fileUrl="/Tomato-TOEIC-Compact-Part-5&6.pdf"
-                plugins={[layoutPluginInstance]}
-              />
-            </Worker>
-            <canvas ref={canvasRef} className="draw-canvas active" />
+            <iframe
+              src={`${API}/api/knowledge/preview/${doc.id}`}
+              title="PDF"
+            />
+            <canvas ref={canvasRef} className="draw-canvas" />
           </div>
         </div>
       </main>
 
-      {/* ===== SIDEBAR GHI CHÚ ===== */}
+      {/* ===== NOTES ===== */}
       <aside className="outline">
         <h4>📝 Ghi chú</h4>
 
-        {notes.length === 0 && (
-          <p style={{ fontSize: 14, color: "#888" }}>
-            Chưa có ghi chú nào
-          </p>
-        )}
-
-        {notes.map((note) => (
-          <div
-            key={note.id}
-            style={{
-              border:
-                note.id === activeNoteId
-                  ? "1px solid #4f46e5"
-                  : "1px solid #ddd",
-              borderRadius: 8,
-              padding: 8,
-              marginBottom: 8,
-              background: "#fff",
-            }}
-            onClick={() => setActiveNoteId(note.id)}
-          >
-            <textarea
-              value={note.content}
-              placeholder="Nhập ghi chú..."
-              onChange={(e) =>
-                setNotes((prev) =>
-                  prev.map((n) =>
-                    n.id === note.id
-                      ? { ...n, content: e.target.value }
-                      : n
-                  )
+        {notes.map((n) => (
+          <textarea
+            key={n.id}
+            value={n.noiDung || ""}
+            onChange={(e) =>
+              setNotes((prev) =>
+                prev.map((x) =>
+                  x.id === n.id ? { ...x, noiDung: e.target.value } : x
                 )
-              }
-              style={{
-                width: "100%",
-                minHeight: 60,
-                border: "none",
-                outline: "none",
-                resize: "vertical",
-              }}
-            />
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: 12,
-                color: "#666",
-                marginTop: 4,
-              }}
-            >
-              <span>
-                {new Date(note.createdAt).toLocaleTimeString()}
-              </span>
-              <button
-                style={{
-                  border: "none",
-                  background: "none",
-                  color: "#e11d48",
-                  cursor: "pointer",
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setNotes((prev) =>
-                    prev.filter((n) => n.id !== note.id)
-                  );
-                  if (activeNoteId === note.id) setActiveNoteId(null);
-                }}
-              >
-                🗑
-              </button>
-            </div>
-          </div>
+              )
+            }
+          />
         ))}
       </aside>
     </div>
