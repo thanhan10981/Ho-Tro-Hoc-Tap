@@ -4,7 +4,8 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
-
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
+import { useAuth } from "../../../features/auth/context/useAuth";
 
 interface Conversation {
   id: number;
@@ -16,11 +17,31 @@ interface Message {
 }
 
 export default function AiChatPage() {
+const { user} = useAuth();
 const [conversationId, setConversationId] = useState<number | null>(null);
 const [conversations, setConversations] = useState<Conversation[]>([]);
-const [detailLevel, setDetailLevel] = useState<"simple" | "detailed">("simple");
-const [language] = useState("vi");
-const [subject, setSubject] = useState<string | null>(null);
+const [pendingFile, setPendingFile] = useState<File | null>(null);
+const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [deleteId, setDeleteId] = useState<number | null>(null);
+const [toast, setToast] = useState<{
+  message: string;
+  type: "error" | "success";
+} | null>(null);
+const showToast = (message: string, type: "error" | "success" = "error") => {
+  setToast({ message, type });
+  setTimeout(() => setToast(null), 3000);
+};
+const authFetch = (url: string, options: RequestInit = {}) => {
+  const token = localStorage.getItem("token");
+
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
 
 const [messages, setMessages] = useState<Message[]>([
   {
@@ -32,7 +53,7 @@ const [messages, setMessages] = useState<Message[]>([
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
 const loadMessages = async (id: number) => {
-  const res = await fetch(
+  const res = await authFetch(
     `http://localhost:9090/api/chat/conversation/${id}`
   );
   const data = await res.json();
@@ -53,14 +74,10 @@ const loadMessages = async (id: number) => {
 };
 
 const createConversation = async () => {
-  const res = await fetch("http://localhost:9090/api/chat/conversation", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      userId: 1,
-      monHocId: 1
-    })
-  });
+  const res = await authFetch(
+    "http://localhost:9090/api/chat/conversation",
+    { method: "POST" }
+  );
 
   const conv = await res.json();
 
@@ -77,8 +94,8 @@ const createConversation = async () => {
 
 useEffect(() => {
   const init = async () => {
-    const res = await fetch(
-      "http://localhost:9090/api/chat/conversation/user/1"
+    const res = await authFetch(
+      "http://localhost:9090/api/chat/conversation/user"
     );
     const data = await res.json();
 
@@ -98,62 +115,79 @@ useEffect(() => {
   init();
 }, []);
 
-
 const sendMessage = async () => {
-  if (!input.trim() || loading || !conversationId) return;
+  if (loading || !conversationId) return;
+  if (!input.trim() && !pendingFile) return;
 
-  const question = input;
-const prompt = `
-Bạn là AI trợ lý học tập.
-
-${subject
-  ? `Môn học: ${subject}`
-  : `Môn học: Không xác định. Hãy tự xác định môn học phù hợp dựa trên nội dung câu hỏi.`
-}
-Mức độ: ${
-  detailLevel === "simple"
-    ? "Giải thích đơn giản, dễ hiểu cho người mới"
-    : "Giải thích chi tiết, có ví dụ và phân tích"
-}
-
-Ngôn ngữ trả lời: ${language === "vi" ? "Tiếng Việt" : "English"}
-
-Câu hỏi của học sinh:
-${question}
-`;
-  setMessages(prev => [
-    ...prev,
-    { sender: "user", text: question },
-    { sender: "ai", text: "_⏳AI đang suy nghĩ..._" }
-  ]);
+  const userInput = input.trim();   
+  const file = pendingFile;
 
   setInput("");
   setLoading(true);
 
-  try {
-    const res = await fetch("http://localhost:9090/api/chat/message", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        conversationId,
-        message: question,      
-        prompt: prompt          
-      })
-    });
+  setMessages(prev => [
+    ...prev,
+    {
+      sender: "user",
+      text: file
+        ? ` ${file.name}\nCâu hỏi: ${
+            userInput || "Hãy phân tích nội dung tài liệu này"
+          }`
+        : userInput
+    },
+    { sender: "ai", text: "__loading__" }
 
-    const text = await res.text();
+  ]);
+
+  try {
+    let aiText = "";
+
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("conversationId", conversationId.toString());
+      formData.append(
+        "question",
+        userInput || "Hãy phân tích nội dung tài liệu này"
+      );
+
+      const res = await authFetch(
+        "http://localhost:9090/api/chat/upload",
+        { method: "POST", body: formData }
+      );
+
+      aiText = await res.text();
+      setPendingFile(null); 
+    }
+
+    else {
+      const res = await authFetch(
+        "http://localhost:9090/api/chat/message",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversationId,
+            message: userInput,
+          }),
+        }
+      );
+
+      aiText = await res.text();
+    }
+
     setMessages(prev => {
       const copy = [...prev];
-      copy[copy.length - 1] = { sender: "ai", text };
+      copy[copy.length - 1] = { sender: "ai", text: aiText };
       return copy;
     });
 
-  } catch {
+  } catch (err) {
     setMessages(prev => {
       const copy = [...prev];
       copy[copy.length - 1] = {
         sender: "ai",
-        text: "Không kết nối được AI"
+        text: "Không xử lý được yêu cầu"
       };
       return copy;
     });
@@ -162,46 +196,92 @@ ${question}
   }
 };
 
+const deleteConversation = async () => {
+  if (!deleteId) return;
+
+  await fetch(`http://localhost:9090/api/chat/conversation/${deleteId}`, {
+    method: "DELETE"
+  });
+
+  setConversations(prev => prev.filter(c => c.id !== deleteId));
+
+  if (conversationId === deleteId) {
+    setConversationId(null);
+    setMessages([
+      { sender: "ai", text: "Đoạn chat đã được xóa." }
+    ]);
+  }
+
+  setShowDeleteModal(false);
+  setDeleteId(null);
+};
+ const ALLOWED_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/png",
+  "image/jpeg"
+];
+
+
+const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    showToast("Chỉ hỗ trợ PDF, Word hoặc ảnh (PNG, JPG)", "error");
+    return;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    showToast("File tối đa 10MB", "error");
+    return;
+  }
+
+  setPendingFile(file);     
+};
+
 return (
         <div className="ai-chat-page">
-
-            {/* ===== MAIN LAYOUT 3 CỘT ===== */}
             <div className="ai-chat-page layout">
-
-
-                {/* ========== LEFT SIDEBAR ========== */}
                 <aside className="sidebar">
                     <h2 className="title">Hỏi đáp AI</h2>
                     <p className="subtitle">Đặt câu hỏi và nhận câu trả lời thông minh từ trí tuệ nhân tạo</p>
 
-                    <label className="label">Tất cả môn học</label>
-                    <select className="select">
-                        <option>Toán học</option>
-                        <option>Vật lý</option>
-                        <option>AI</option>
-                        <option>Hóa học</option>
-                    </select>
-
                     <div className="chat-list">
                         {conversations.map(c => (
-                            <div
+                          <div
                             key={c.id}
                             className={`chat-item ${c.id === conversationId ? "active" : ""}`}
                             onClick={() => {
-                                setConversationId(c.id);
-                                loadMessages(c.id);
+                              setConversationId(c.id);
+                              loadMessages(c.id);
                             }}
+                          >
+                            <div className="chat-left">
+                              <div className="chat-avatar">💬</div>
+
+                              <div className="chat-info">
+                                <div className="chat-title">
+                                  Cuộc trò chuyện #{c.id}
+                                </div>
+                                <div className="chat-date">
+                                  {new Date(c.createdAt).toLocaleDateString()}
+                                </div>
+                              </div>
+                            </div>
+
+                            <button
+                              className="chat-delete"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteId(c.id);
+                                setShowDeleteModal(true);
+                              }}
                             >
-                            <div className="chat-icon blue">💬</div>
-                            <div>
-                                <p className="chat-title">
-                                Cuộc trò chuyện #{c.id}
-                                </p>
-                                <span className="chat-sub">
-                                {new Date(c.createdAt).toLocaleDateString()}
-                                </span>
-                            </div>
-                            </div>
+                              ✕
+                            </button>
+                          </div>
                         ))}
                     </div>
 
@@ -221,8 +301,22 @@ return (
 
                         <div className="header-actions">
                             <button className="btn primary" onClick={createConversation}>
-                            + Cuộc trò chuyện mới
+                              <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M12 20h9" />
+                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                              </svg>
+                              Đoạn chat mới
                             </button>
+
                         </div>
                         </div>
 
@@ -237,16 +331,25 @@ return (
                                 )}
 
                                 <div className={`bubble ${msg.sender}`}>
-                                    <ReactMarkdown
-                                    remarkPlugins={[remarkMath]}
-                                    rehypePlugins={[rehypeKatex]}
-                                    >
-                                    {msg.text}
-                                    </ReactMarkdown>
-                                </div>
+                                    {msg.sender === "ai" && msg.text === "__loading__" ? (
+                                      <div className="typing">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                      </div>
+                                    ) : (
+                                      <ReactMarkdown
+                                        remarkPlugins={[remarkMath]}
+                                        rehypePlugins={[rehypeKatex]}
+                                      >
+                                        {msg.text}
+                                      </ReactMarkdown>
+                                    )}
+                                  </div>
+
 
                                 {msg.sender === "user" && (
-                                    <div className="avatar user">NT</div>
+                                    <div className="avatar user"> {user ? user.hoTen.charAt(0).toUpperCase() : "?"}</div>
                                 )}
                                 </div>
 
@@ -254,93 +357,73 @@ return (
                     </div>
 
                     <div className="chat-input">
-                        <input
-                            value={input}
-                            onChange={e => setInput(e.target.value)}
-                            onKeyDown={e => e.key === "Enter" && sendMessage()}
-                            placeholder="Nhập câu hỏi của bạn..."
-                            disabled={loading}
-                        />
-                        <button
-                            className="send-btn"
-                            onClick={sendMessage}
-                            disabled={loading || !conversationId}
-                            >
-                            Gửi
-                            </button>
+                      <label className="file-btn">
+                        <span className="icon">
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M21.44 11.05l-8.49 8.49a5 5 0 0 1-7.07-7.07l8.49-8.49a3.5 3.5 0 0 1 4.95 4.95l-8.49 8.49a2 2 0 1 1-2.83-2.83l8.49-8.49" />
+                          </svg>
+                        </span>
+                          {pendingFile && (
+                            <div className="pending-file">
+                               {pendingFile.name}
+                              <button onClick={() => setPendingFile(null)}>✕</button>
+                            </div>
+                          )}
 
-                    </div>
+                        <input
+                          type="file"
+                          hidden
+                          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                          onChange={handleFileUpload}
+                        />
+                      </label>
+
+                        <input
+                          value={input}
+                          onChange={e => setInput(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && sendMessage()}
+                          placeholder="Nhập câu hỏi của bạn hoặc tải file..."
+                          disabled={loading}
+                        />
+
+                        <button
+                          className="send-btn"
+                          onClick={sendMessage}
+                          disabled={loading || !conversationId}
+                        >
+                          Gửi
+                        </button>
+                      </div>
+
                 </main>
 
-                {/* RIGHT SIDEBAR */}
-                <aside className="rightbar">
-
-                    <div className="card">
-                        <h3 className="card-title">Tuỳ chọn chủ đề</h3>
-
-                        <label className="label">Môn học</label>
-                        <select
-                            className="select"
-                            value={subject ?? ""}
-                            onChange={e =>
-                              setSubject(e.target.value === "" ? null : e.target.value)
-                            }
-                          >
-                            <option value="">Chọn môn học</option>
-                            <option value="Toán học">Toán học</option>
-                            <option value="Vật lý">Vật lý</option>
-                            <option value="AI">AI</option>
-                            <option value="Hóa học">Hóa học</option>
-                          </select>
-
-
-                        <label className="label">Mức độ chi tiết</label>
-                        <div className="detail-buttons">
-                          <button
-                            className={`btn small ${detailLevel === "simple" ? "active" : ""}`}
-                            onClick={() => setDetailLevel("simple")}
-                          >
-                            Đơn giản
-                          </button>
-
-                          <button
-                            className={`btn small ${detailLevel === "detailed" ? "active" : ""}`}
-                            onClick={() => setDetailLevel("detailed")}
-                          >
-                            Chi tiết
-                          </button>
-                        </div>
-
-
-                        <label className="label">Ngôn ngữ trả lời</label>
-                        <select className="select">
-                            <option>Tiếng Việt</option>
-                            <option>English</option>
-                        </select>
-                    </div>
-
-                    <div className="card">
-                        <h3 className="card-title">Đề xuất câu hỏi</h3>
-
-                        <div className="tag-item">Giải thích định lý Pythagorean <span className="tag blue">Toán</span></div>
-                        <div className="tag-item">Phân biệt tốc độ và vận tốc <span className="tag green">Vật lý</span></div>
-                        <div className="tag-item">Cách cân bằng phương trình hóa học <span className="tag yellow">Hóa học</span></div>
-                        <div className="tag-item">Thuật toán sắp xếp nào hiệu quả nhất? <span className="tag green">CNTT</span></div>
-                        <div className="tag-item">Phân biệt AI, ML và Deep Learning <span className="tag purple">AI</span></div>
-                    </div>
-
-                    <div className="card">
-                        <h3 className="card-title">Tài liệu đã tải lên</h3>
-
-                        <div className="file-item">calculus_notes.pdf <span className="remove">✕</span></div>
-                        <div className="file-item">formula_image.jpg <span className="remove">✕</span></div>
-
-                        <button className="btn dashed">+ Thêm tài liệu</button>
-                    </div>
-
-                </aside>
-
             </div>
+            <ConfirmDeleteModal
+                open={showDeleteModal}
+                onCancel={() => {
+                  setShowDeleteModal(false);
+                  setDeleteId(null);
+                }}
+                onConfirm={deleteConversation}
+              />
+              {toast && (
+                <div className={`toast ${toast.type}`}>
+                  {toast.message}
+                </div>
+              )}
+
         </div>
+        
     );
+   
+
 }

@@ -6,7 +6,7 @@ import DashboardPage from "../pages/Home/DashboardPage";
 import SchedulePage from "../pages/Schedule/SchedulePage";
 import KnowledgeStoragePage from "../pages/KnowledgeStorage/KnowledgeStoragePage";
 import PersonalDocPage from "../pages/KnowledgeStorage/PersonalDocPage";
-import SummaryPage from "../pages/SummaryPage";
+import SummaryPage from "../pages/SummaryPage/SummaryPage";
 import AiChatPage from "../pages/AiChat/AiChatPage";
 import QuizFlashcard from "../pages/QuizFlashcard/QuizFlashcard";
 
@@ -15,6 +15,7 @@ import Login from "../../features/auth/pages/Login";
 import Register from "../../features/auth/pages/Register";
 import PrivateRoute from "./PrivateRoute";
 import PublicPreview from "../pages/KnowledgeStorage/PublicPreview";
+import QuizPlay from "../../features/QuizFlashcard/component/QuizPlay";
 
 export default function AppRoutes() {
   return (
@@ -59,6 +60,7 @@ export default function AppRoutes() {
           </PrivateRoute>
         }
       />
+      <Route path="/quiz/:maQuiz" element={<QuizPlay />} />
 
       <Route
         path="/personalStore/:id"

@@ -1,40 +1,61 @@
-import type { CalendarEvent, LichHocCalendarDTO } from "../types/lichHoc";
-import {
-  parseISO,
-  addWeeks, addMonths, isAfter
-} from "date-fns";
-import type { EventFormData } from "../types/lichHoc";
+  import type { CalendarEvent, LichHocCalendarDTO, CreateEventRequest } from "../types/lichHoc";
+  import {
+    addWeeks, addMonths, isAfter
+  } from "date-fns";
+  import type { EventFormData } from "../types/lichHoc";
 
-const COLOR_MAP: Record<string, string> = {
-  hoc: "#bfdbfe",
-  thi: "#fef3c7",
-  deadline: "#fecaca",
+  import type { ReminderUnit } from "../types/lichHoc";
+
+const toMinutes = (value: number, unit: ReminderUnit): number => {
+  switch (unit) {
+    case "days":
+      return value * 24 * 60;
+    case "hours":
+      return value * 60;
+    default:
+      return value;
+  }
 };
-export function mapToCalendarEvents(
+
+  const COLOR_MAP: Record<string, string> = {
+    hoc: "#bfdbfe",
+    thi: "#fef3c7",
+    deadline: "#fecaca",
+  };
+  export function mapToCalendarEvents(
   dto: LichHocCalendarDTO
 ): CalendarEvent[] {
   const events: CalendarEvent[] = [];
-
-  const startDate = parseISO(dto.ngayBatDau);
-  const endDate = parseISO(dto.ngayKetThuc);
 
   const color = COLOR_MAP[dto.loaiSuKien] ?? "#e5e7eb";
 
   // ===== EVENT NGÀY BẮT ĐẦU =====
   events.push({
-    date: startDate.toISOString(),
+    date: dto.ngayBatDau,
     title: dto.tieuDe,
     time: `Bắt đầu - ${dto.gioBatDau?.slice(0, 5) ?? ""}`,
     color,
+
+    location: dto.diaDiem || undefined,
+    description: dto.moTa ?? undefined,
+    type: dto.loaiSuKien,
+
+    rawDto: dto, // 🔥🔥🔥 BẮT BUỘC
   });
 
-  // ===== EVENT NGÀY KẾT THÚC (nếu khác ngày) =====
+  // ===== EVENT NGÀY KẾT THÚC =====
   if (dto.ngayBatDau !== dto.ngayKetThuc) {
     events.push({
-      date: endDate.toISOString(),
+      date: dto.ngayKetThuc,
       title: dto.tieuDe,
       time: `Kết thúc - ${dto.gioKetThuc?.slice(0, 5) ?? ""}`,
       color,
+
+      location: dto.diaDiem || undefined,
+      description: dto.moTa ?? undefined,
+      type: dto.loaiSuKien,
+
+      rawDto: dto, // 🔥🔥🔥 BẮT BUỘC
     });
   }
 
@@ -42,46 +63,114 @@ export function mapToCalendarEvents(
 }
 
 
-export function calcReminderTime(
-  endDate: string,
-  endTime: string,
-  reminderMinutes: number
-): string {
-  const end = new Date(`${endDate}T${endTime}`);
-  end.setMinutes(end.getMinutes() - reminderMinutes);
 
-  const pad = (n: number) => n.toString().padStart(2, "0");
+  export function calcReminderTime(
+    endDate: string,
+    endTime: string,
+    reminderMinutes: number
+  ): string {
+    const [hour, minute] = endTime.split(":").map(Number);
 
-  return `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}:00`;
+    const totalMinutes = hour * 60 + minute - reminderMinutes;
+
+    const h = Math.floor((totalMinutes + 1440) % 1440 / 60);
+    const m = (totalMinutes + 1440) % 60;
+
+    const pad = (n: number) => n.toString().padStart(2, "0");
+
+    return `${endDate}T${pad(h)}:${pad(m)}:00`;
+  }
+
+
+
+  export function generateWeeklyEvents(
+    base: EventFormData
+  ): EventFormData[] {
+    if (!base.repeat || !base.repeatMonths) {
+      return [base];
+    }
+
+    const events: EventFormData[] = [];
+
+    let currentStart = new Date(`${base.startDate}T${base.startTime}`);
+    let currentEnd = new Date(`${base.endDate}T${base.endTime}`);
+
+    const endLimit = addMonths(currentStart, base.repeatMonths);
+    const formatDate = (d: Date) =>
+     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+    const formatTime = (d: Date) =>
+      `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    
+    while (!isAfter(currentStart, endLimit)) {
+      events.push({
+        ...base,
+        startDate: formatDate(currentStart),
+        startTime: formatTime(currentStart),
+        endDate: formatDate(currentEnd),
+        endTime: formatTime(currentEnd),
+      });
+
+      currentStart = addWeeks(currentStart, 1);
+      currentEnd = addWeeks(currentEnd, 1);
+    }
+
+    return events;
+  }
+  export function buildReminderDateTime(
+    date: string, // yyyy-MM-dd
+    time: string  // HH:mm
+  ): string {
+    return `${date}T${time}:00`;
+  }
+// shared/utils/lichHocMapper.ts
+
+function convertToMinutes(value: number, unit: ReminderUnit): number {
+  switch (unit) {
+    case "minutes": return value;
+    case "hours": return value * 60;
+    case "days": return value * 24 * 60;
+    default: return value;
+  }
 }
 
+export function mapFormToCreateEventRequest(
+  data: EventFormData
+): CreateEventRequest {
 
-export function generateWeeklyEvents(
-  base: EventFormData
-): EventFormData[] {
-  if (!base.repeat || !base.repeatMonths) {
-    return [base];
+  if (!data.startDate || !data.startTime) {
+    throw new Error("Thiếu ngày/giờ bắt đầu");
   }
 
-  const events: EventFormData[] = [];
-
-  let currentStart = new Date(`${base.startDate}T${base.startTime}`);
-  let currentEnd = new Date(`${base.endDate}T${base.endTime}`);
-
-  const endLimit = addMonths(currentStart, base.repeatMonths);
-
-  while (!isAfter(currentStart, endLimit)) {
-    events.push({
-      ...base,
-      startDate: currentStart.toISOString().slice(0, 10),
-      startTime: currentStart.toTimeString().slice(0, 5),
-      endDate: currentEnd.toISOString().slice(0, 10),
-      endTime: currentEnd.toTimeString().slice(0, 5),
-    });
-
-    currentStart = addWeeks(currentStart, 1);
-    currentEnd = addWeeks(currentEnd, 1);
+  if (!data.endDate || !data.endTime) {
+    throw new Error("Thiếu ngày/giờ kết thúc");
   }
 
-  return events;
+  const startDateTime = `${data.startDate}T${data.startTime}:00`;
+  const endDateTime = `${data.endDate}T${data.endTime}:00`;
+
+  return {
+    tieuDe: data.title,
+    moTa: data.description || null,
+    maMonHoc: data.subject === "" ? null : Number(data.subject),
+    loaiSuKien: data.type,
+
+    thoiGianBatDau: startDateTime,
+    thoiGianKetThuc: endDateTime,
+
+    mucDoUuTien: data.priority,
+    diaDiem: data.location || null,
+
+    nhacTruocBatDau: data.remindBeforeStart,
+    soPhutTruocBatDau: data.remindBeforeStart
+      ? convertToMinutes(data.remindStartValue, data.remindStartUnit)
+      : null,
+
+    nhacTruocKetThuc: data.remindBeforeEnd,
+    soPhutTruocKetThuc: data.remindBeforeEnd
+      ? convertToMinutes(data.remindEndValue, data.remindEndUnit)
+      : null,
+
+    emailNhacNho: null,
+  };
 }

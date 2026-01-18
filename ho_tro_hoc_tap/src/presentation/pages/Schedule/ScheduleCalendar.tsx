@@ -4,13 +4,31 @@ import { useScheduleCalendar } from "../../../features/Schedule/useScheduleCalen
 import { useCalendarEvents } from "../../../features/Schedule/useCalendarEvents";
 import "../../../styles/Schedule/ScheduleCalendar.css";
 import DayEventsPopup from "./DayEventsPopup";
-import type { CalendarEvent } from "../../../features/Schedule/useScheduleCalendar";
 
-export default function ScheduleCalendar(): React.JSX.Element {
+import type { CalendarEvent } from "../../../features/Schedule/useScheduleCalendar";
+import { useSearchCalendarEvents } from "../../../features/Schedule/useSearchCalendarEvents";
+
+interface Props {
+  filters: {
+    keyword?: string;
+    maMonHoc?: number;
+    loaiSuKien?: string[];
+
+  };
+
+  refreshKey: number;
+
+  onRefresh?: () => void;
+
+}
+
+
+
+export default function ScheduleCalendar({ filters, refreshKey, onRefresh, }: Props): React.JSX.Element {
  /* ================== 1. popup state ================== */
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
   const [popupEvents, setPopupEvents] = React.useState<CalendarEvent[]>([]);
-
+  
   /* ================== 2. click day handler (PHẢI Ở TRÊN) ================== */
   const onDayClick = React.useCallback(
     (date: Date) => {
@@ -37,7 +55,38 @@ export default function ScheduleCalendar(): React.JSX.Element {
   } = useScheduleCalendar(onDayClick);
 
   /* ================== 4. fetch events ================== */
-  const { events, loading } = useCalendarEvents(currentDate, viewMode);
+
+
+
+  const hasFilter =
+    !!filters.keyword ||
+    !!filters.maMonHoc ||
+    !!filters.loaiSuKien;
+
+  const calendarData = useCalendarEvents(
+    currentDate,
+    viewMode,
+    refreshKey
+  );
+
+  const searchData = useSearchCalendarEvents(
+    filters,
+    refreshKey
+  );
+
+  const rawEvents = hasFilter
+  ? searchData.events
+  : calendarData.events;
+
+ const events: CalendarEvent[] = rawEvents ?? [];
+
+
+
+  const loading = hasFilter
+    ? searchData.loading
+    : calendarData.loading;
+
+
 
   /* ================== 5. sync popup events when events change ================== */
   React.useEffect(() => {
@@ -157,6 +206,7 @@ export default function ScheduleCalendar(): React.JSX.Element {
           date={selectedDate}
           events={popupEvents}
           onClose={() => setSelectedDate(null)}
+          onChanged={onRefresh ?? (() => {})}
         />
       )}
     </>

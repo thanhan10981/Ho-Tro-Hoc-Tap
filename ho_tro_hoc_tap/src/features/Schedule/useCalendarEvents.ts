@@ -12,7 +12,8 @@ import {
 
 export function useCalendarEvents(
   currentDate: Date,
-  viewMode: "month" | "week"
+  viewMode: "month" | "week",
+  refreshKey: number
 ) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -49,7 +50,7 @@ export function useCalendarEvents(
     };
 
     fetchData();
-  }, [currentDate, viewMode]);
+  }, [currentDate, viewMode, refreshKey]);
 
   return { events, loading };
 }

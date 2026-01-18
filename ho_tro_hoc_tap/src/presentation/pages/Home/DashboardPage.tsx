@@ -1,21 +1,157 @@
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../../../features/auth/context/useAuth";
 import "../../../styles/dashboard.css";
+import { getToken } from "../../../features/auth/util/token";
+
+import type { LichHocUpcoming } from "../../../shared/types/lichHoc";
+import { getUpcomingEvents } from "../../../shared/services/summary.Service";
+
+type AIItem = {
+  id: number;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+};
+
+type AIResponse = {
+  greeting: string;
+  summary: string;
+  items: AIItem[];
+  actions: string[];
+};
+
+type ChatMessage = {
+  id: string;
+  question: string;
+  response: AIResponse;
+  createdAt: number;
+};
+
 const DashboardPage = () => {
+  const { user } = useAuth();
+  const STORAGE_KEY = `ai_chat_history_${user?.email}`;
+
+  const [question, setQuestion] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [events, setEvents] = useState<LichHocUpcoming[]>([]);
+
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  const token = getToken();
+
+  const lastActions =
+    chatHistory.length > 0
+      ? chatHistory[chatHistory.length - 1].response.actions ?? []
+      : [];
+
+  useEffect(() => {
+    if (!chatRef.current) return;
+
+    chatRef.current.scrollTo({
+      top: chatRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [chatHistory, loading]);
+
+  useEffect(() => {
+    if (!STORAGE_KEY) return;
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      setChatHistory(JSON.parse(saved));
+    }
+  }, [STORAGE_KEY]);
+
+  useEffect(() => {
+    getUpcomingEvents()
+      .then(setEvents)
+      .catch((err) => console.error("Lỗi load sự kiện:", err));
+  }, []);
+
+  const askAI = async () => {
+    if (!question.trim()) return;
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:9090/api/assistant/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ message: question }),
+      });
+
+      const data: AIResponse = await res.json();
+
+      const newChat: ChatMessage = {
+        id: crypto.randomUUID(),
+        question,
+        response: data,
+        createdAt: Date.now(),
+      };
+
+      setChatHistory((prev) => {
+        const updated = [...prev, newChat];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+
+      setQuestion("");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getPriorityClass = (priority: string) => {
+    switch (priority) {
+      case "khan_cap":
+        return "urgent";
+      case "quan_trong":
+        return "important";
+      case "binh_thuong":
+      default:
+        return "normal";
+    }
+  };
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case "khan_cap":
+        return "KHẨN CẤP";
+      case "quan_trong":
+        return "QUAN TRỌNG";
+      case "binh_thuong":
+      default:
+        return "BÌNH THƯỜNG";
+    }
+  };
+
   return (
     <div className="dashboard">
-
       {/* HERO */}
-            <section className="hero">
+      <section className="hero">
         <div className="hero-left">
-          <h1>Xin chào Nguyễn Thành! 👋</h1>
+          <h1>{user ? user.hoTen : "?"}! 👋</h1>
           <p>Hôm nay bạn muốn học gì?</p>
 
           <div className="search-row">
             <div className="search-box">
-              <input type="text" placeholder="Đặt câu hỏi cho AI hoặc tìm kiếm..." />
+              <input
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="Đặt câu hỏi cho AI..."
+              />
               <img src="/search.svg" className="search-icon" />
             </div>
 
-            <button className="ask-ai-btn">Hỏi AI ngay</button>
+            <button className="ask-ai-btn" onClick={askAI} disabled={loading}>
+              {loading ? "Đang hỏi..." : "Hỏi AI"}
+            </button>
           </div>
         </div>
 
@@ -24,10 +160,7 @@ const DashboardPage = () => {
           <img src="/logo_ai.svg" className="hero-img" />
         </div>
       </section>
-
-
-
-      {/* STAT CARDS */}
+       {/* STAT CARDS */}
       <section className="stats">
   <div className="stat-card">
     <div className="stat-top">
@@ -70,96 +203,107 @@ const DashboardPage = () => {
   </div>
 </section>
 
+     {/* ASSISTANT + SỰ KIỆN (2 CỘT) */}
+      <section className="assistant-events">
+        {/* CỘT 1 — AI ASSISTANT */}
+        <div className="assistant">
+          <div className="assistant-header">
+            <div className="icon-blue">
+              <img src="/logo_ai.svg" />
+            </div>
+            <h2>AI Assistant</h2>
+          </div>
 
-      {/* ASSISTANT + SỰ KIỆN (2 CỘT) */}
-<section className="assistant-events">
-  
-  {/* CỘT 1 — AI ASSISTANT */}
-  <div className="assistant">
-    <div className="assistant-header">
-      <div className="icon-blue">
-        <img src="/logo_ai.svg" />
-      </div>
-      <h2>AI Assistant</h2>
-    </div>
+          <div className="assistant-input">
+            <input
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="Đặt câu hỏi cho AI..."
+            />
+            <button onClick={askAI} disabled={loading}>
+              {loading ? "Đang hỏi..." : "Hỏi AI"}
+            </button>
+          </div>
 
-    <div className="assistant-input">
-      <input placeholder="Đặt câu hỏi cho AI..." />
-      <button>Gửi</button>
-    </div>
+          <div className="assistant-suggest">
+            {Array.isArray(lastActions) &&
+              lastActions.map((action: string) => (
+                <button
+                  key={action}
+                  onClick={() => {
+                    setQuestion(action.replace(/^[^\w]+/, ""));
+                    setTimeout(() => askAI(), 0);
+                  }}
+                >
+                  {action}
+                </button>
+              ))}
+          </div>
 
-    <div className="assistant-suggest">
-      <button>“Hôm nay có môn gì?”</button>
-      <button>“Deadline tuần này?”</button>
-      <button>“Tạo quiz Toán”</button>
-    </div>
+          <div className="assistant-chat" ref={chatRef}>
+            {chatHistory.map((chat) => (
+              <div key={chat.id}>
+                <div className="user-msg">{chat.question}</div>
 
-    <div className="assistant-chat">
-      <div className="user-msg">Tuần này còn môn nào thi không?</div>
-      <div className="ai-msg">
-        Bạn có môn Cấu trúc dữ liệu thi vào 12/12 lúc 13:00, phòng B203.
-        Còn môn Cơ sở dữ liệu thi 15/12 lúc 8:00, phòng A101.
-      </div>
-    </div>
-  </div>
+                <div className="ai-msg">
+                  <h4>🤖 AI StudyBuddy</h4>
+                  <p>{chat.response.summary}</p>
 
-      {/* CỘT 2 — SỰ KIỆN SẮP TỚI */}
-      {/* === UPCOMING EVENTS === */}
-<section className="events-card">
-  <h2 className="events-title">Sự kiện sắp tới</h2>
+                  {chat.response.items?.length > 0 && (
+                    <ul>
+                      {chat.response.items.map((item) => (
+                        <li key={item.id}>{item.title}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            ))}
 
-  <div className="event-item urgent">
-    <div className="event-line urgent"></div>
-    <div className="event-body">
-      <div className="event-top">
-        <span className="badge urgent">URGENT</span>
-        <span className="event-time">Hôm nay 14:00</span>
-      </div>
-      <h3 className="event-name">Nộp bài tập Cơ sở dữ liệu</h3>
-      <p className="event-desc">Thiết kế CSDL cho hệ thống quản lý thư viện</p>
-    </div>
-  </div>
+            {loading && <div className="ai-msg">🤖 AI đang suy nghĩ...</div>}
+          </div>
+        </div>
+        {/* === UPCOMING EVENTS (PHẦN MERGED CHUẨN) === */}
+        <section className="events-card">
+          <h2 className="events-title">Sự kiện sắp tới</h2>
 
-  <div className="event-item important">
-    <div className="event-line important"></div>
-    <div className="event-body">
-      <div className="event-top">
-        <span className="badge important">IMPORTANT</span>
-        <span className="event-time">Ngày mai 8:00</span>
-      </div>
-      <h3 className="event-name">Kiểm tra giữa kỳ Toán</h3>
-      <p className="event-desc">Phòng A205 • Đại số tuyến tính</p>
-    </div>
-  </div>
+          {events.length === 0 && (
+            <p style={{ padding: "10px" }}>
+              Không có sự kiện nào trong tuần tới
+            </p>
+          )}
 
-  <div className="event-item normal">
-    <div className="event-line normal"></div>
-    <div className="event-body">
-      <div className="event-top">
-        <span className="badge normal">NORMAL</span>
-        <span className="event-time">T3 • 10:00</span>
-      </div>
-      <h3 className="event-name">Thuyết trình nhóm AI</h3>
-      <p className="event-desc">Ứng dụng Machine Learning trong y tế</p>
-    </div>
-  </div>
+          {events.map((event, index) => {
+            const css = getPriorityClass(event.mucDoUuTien);
 
-  <div className="event-item normal">
-    <div className="event-line normal"></div>
-    <div className="event-body">
-      <div className="event-top">
-        <span className="badge normal">NORMAL</span>
-        <span className="event-time">T5 • 15:30</span>
-      </div>
-      <h3 className="event-name">Học bù Lập trình Web</h3>
-      <p className="event-desc">Phòng B103 • Framework React</p>
-    </div>
-  </div>
-</section>
+            return (
+              <div key={index} className={`event-item ${css}`}>
+                <div className={`event-line ${css}`} />
 
+                <div className="event-body">
+                  <div className="event-top">
+                    <span className={`badge ${css}`}>
+                      {getPriorityLabel(event.mucDoUuTien)}
+                    </span>
 
-    </section>
-<div className="dashboard-grid">
+                    <span className="event-time">
+                      {event.thoiGianKetThuc}
+                    </span>
+                  </div>
+
+                  <h3 className="event-name">{event.tieuDe}</h3>
+
+                  <p className="event-desc">
+                    {event.diaDiem
+                      ? `${event.diaDiem} • ${event.moTa ?? ""}`
+                      : event.moTa}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </section>
+      </section><div className="dashboard-grid">
 {/* RECENT ACTIVITIES */}
 <section className="recent-activity">
   <h2>Hoạt động học tập gần đây</h2>

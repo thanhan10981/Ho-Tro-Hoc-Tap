@@ -1,0 +1,102 @@
+.importmodal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+}
+
+.importmodal-container {
+  width: 90%;
+  max-width: 900px;
+  height: 90vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: white;
+  border-radius: 12px;
+
+  overflow: hidden;
+}
+
+/* HEADER */
+.importmodal-header {
+  flex-shrink: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+/* 🔥 PHẦN DUY NHẤT ĐƯỢC CUỘN */
+.importmodal-body {
+  flex: 1;
+
+  min-height: 0;        /* QUAN TRỌNG NHẤT */
+  overflow-y: auto;     /* CHỈ BODY CUỘN */
+
+  padding: 16px 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* FOOTER CỐ ĐỊNH */
+.importmodal-actions {
+  flex-shrink: 0;
+
+  padding: 14px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* CARD */
+.import-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  background: white;
+}
+
+/* SCROLLBAR */
+.importmodal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.importmodal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+/* BUTTONS */
+.primary-btn,
+.success-btn,
+.secondary-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.success-btn {
+  background: #16a34a;
+  color: white;
+}
+
+.secondary-btn {
+  background: #e5e7eb;
+}
